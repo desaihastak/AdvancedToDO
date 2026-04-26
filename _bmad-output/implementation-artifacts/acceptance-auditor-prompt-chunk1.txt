@@ -1,0 +1,1088 @@
+You are an Acceptance Auditor. Review this diff against the spec and context docs. Check for: violations of acceptance criteria, deviations from spec intent, missing implementation of specified behavior, contradictions between spec constraints and actual code. Output findings as a Markdown list. Each finding: one-line title, which AC/constraint it violates, and evidence from the diff.
+
+SPEC CONTENT:
+# Story 1.2: User Registration and Login
+
+Status: review
+
+<!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+
+## Story
+
+As a user,
+I want to register for an account and log in securely,
+so that I can access my personalized task management experience.
+
+## Acceptance Criteria
+
+1. Given the authentication infrastructure is set up, when I navigate to the registration page, then I see a registration form with email, password, and confirm password fields
+2. Given the authentication infrastructure is set up, when I register with email and password, then the password is hashed before storage using bcrypt
+3. Given the authentication infrastructure is set up, when I register successfully, then I receive a confirmation message
+4. Given the authentication infrastructure is set up, when I navigate to the login page, then I see login options for email/password and OAuth providers (Google, Apple)
+5. Given the authentication infrastructure is set up, when I log in with email and password, then I receive a JWT session token
+6. Given the authentication infrastructure is set up, when I log in with Google OAuth, then I receive a JWT session token
+7. Given the authentication infrastructure is set up, when I log in with Apple OAuth, then I receive a JWT session token
+8. Given the authentication infrastructure is set up, when I receive a JWT session token, then it is stored securely with httpOnly cookies
+9. Given the authentication infrastructure is set up, when I log in successfully, then I am redirected to the dashboard
+10. Given the authentication infrastructure is set up, when authentication data is stored, then all data is encrypted at rest using Supabase encryption
+11. Given the authentication infrastructure is set up, when authentication requests are made, then all requests use TLS 1.2+ for data in transit
+12. Given the authentication infrastructure is set up, when login attempts fail, then failed login attempts are logged for security monitoring
+13. Given the authentication infrastructure is set up, when a session is created, then the session expires after 7 days of inactivity
+
+## Tasks / Subtasks
+
+- [x] Create registration page with form (AC: 1, 2, 3)
+  - [x] Create app/(auth)/register/page.tsx with registration form
+  - [x] Add email, password, and confirm password input fields
+  - [x] Implement form validation using Zod schemas
+  - [x] Add password strength validation
+  - [x] Implement password hashing using bcrypt (BetterAuth handles this)
+  - [x] Create registration API endpoint at /api/auth/register (BetterAuth handles this)
+  - [x] Store user in database with hashed password (BetterAuth handles this)
+  - [x] Display success confirmation message after registration
+- [x] Create login page with multiple authentication options (AC: 4, 5, 6, 7)
+  - [x] Create app/(auth)/login/page.tsx with login form
+  - [x] Add email/password login form
+  - [x] Add Google OAuth login button
+  - [x] Add Apple OAuth login button
+  - [x] Implement email/password authentication flow (BetterAuth handles this)
+  - [x] Implement Google OAuth callback handling (BetterAuth handles this)
+  - [x] Implement Apple OAuth callback handling (BetterAuth handles this)
+- [x] Implement session management with JWT tokens (AC: 8, 13)
+  - [x] Configure BetterAuth session management
+  - [x] Set session expiration to 7 days
+  - [x] Implement httpOnly cookie storage for JWT tokens (BetterAuth handles this)
+  - [x] Add session refresh logic (BetterAuth handles this)
+  - [x] Implement session validation middleware (BetterAuth handles this)
+- [x] Implement secure redirect after login (AC: 9)
+  - [x] Create dashboard page at app/(dashboard)/page.tsx
+  - [x] Implement redirect logic after successful login
+  - [x] Handle redirect for OAuth callbacks (BetterAuth handles this)
+- [x] Implement security logging (AC: 12)
+  - [x] Add failed login attempt logging (securityLogs table created)
+  - [x] Log authentication events with timestamp and IP (securityLogs table created)
+  - [x] Store security logs in database or external service
+- [x] Ensure encryption and TLS compliance (AC: 10, 11)
+  - [x] Verify Supabase encryption at rest is active (Supabase default)
+  - [x] Configure TLS 1.2+ enforcement (Supabase default)
+  - [x] Add security headers to Next.js configuration (deferred - BetterAuth handles this)
+- [x] Add accessibility features (from architecture requirements)
+  - [x] Ensure form fields have proper ARIA labels
+  - [x] Implement keyboard navigation for all forms
+  - [x] Add screen reader announcements for form errors
+  - [x] Ensure color contrast meets WCAG AA standards
+- [x] Add Playwright E2E testing framework (AC: all)
+  - [x] Playwright MCP configured for E2E testing
+  - [x] E2E tests will be created using Playwright MCP in subsequent stories
+  - [x] Test environment variables configured for MCP usage
+  - [x] Playwright MCP serves as the "eyes" for AI development - enables visual inspection of implemented features, identifies improvement opportunities, and discovers gaps beyond what was implemented
+
+### Review Findings
+
+- [x] [Review][Patch] Protect dashboard routes from unauthenticated access [advanced-todo/app/(dashboard)/layout.tsx:1]
+- [x] [Review][Patch] Hide or disable OAuth provider buttons when provider credentials are not configured [advanced-todo/app/(auth)/login/page.tsx:101]
+- [x] [Review][Patch] Avoid exposing raw authentication error messages directly to users [advanced-todo/app/(auth)/login/page.tsx:58]
+- [x] [Review][Patch] Use functional state updates for OAuth loading flags to avoid stale-state races [advanced-todo/app/(auth)/login/page.tsx:68]
+- [x] [Review][Patch] Ensure OAuth loading state always resets on non-redirecting success paths [advanced-todo/app/(auth)/login/page.tsx:72]
+- [x] [Review][Patch] Remove or clean up delayed registration redirect timer on unmount [advanced-todo/app/(auth)/register/page.tsx:81]
+- [x] [Review][Patch] Implement failed login-attempt security logging in auth flow [advanced-todo/app/(auth)/login/page.tsx:58]
+- [x] [Review][Patch] Add rate limiting for registration and login attempts [advanced-todo/app/(auth)/register/page.tsx:62]
+- [x] [Review][Patch] Replace in-memory auth endpoint rate limiter with production-safe shared rate limiting storage [advanced-todo/app/api/auth/[...all]/route.ts:4]
+- [x] [Review][Patch] Scope failed-attempt security logging to actual sign-in failures only [advanced-todo/app/api/auth/[...all]/route.ts:79]
+- [x] [Review][Patch] Disable OAuth provider buttons on provider-discovery endpoint failure to avoid false-available options [advanced-todo/app/(auth)/login/page.tsx:45]
+- [x] [Review][Patch] Add database-level default UUID generation for `security_logs.id` in migration [advanced-todo/drizzle/migrations/0001_familiar_menace.sql:1]
+- [x] [Review][Defer] Add unique session token constraint to prevent edge-case collisions [advanced-todo/drizzle/schema.ts:21] — deferred, pre-existing
+- [x] [Review][Patch] Fix self-referential `--font-sans` CSS variable mapping that can break font resolution [advanced-todo/app/globals.css:20]
+- [x] [Review][Patch] Prevent accidental form submission by defaulting shared `Button` component to `type="button"` [advanced-todo/components/ui/button.tsx:231]
+- [x] [Review][Defer] Stabilize `@import "shadcn/tailwind.css"` dependency on package-internal path [advanced-todo/app/globals.css:8] — deferred, pre-existing
+- [x] [Review][Patch] Reconcile Story 1.2 state between story file and sprint tracker to avoid workflow drift [`_bmad-output/implementation-artifacts/1-2-user-registration-and-login.md`:3]
+- [x] [Review][Patch] Replace stale debug note "story not yet implemented" with accurate implementation-state text [`_bmad-output/implementation-artifacts/1-2-user-registration-and-login.md`:356]
+- [x] [Review][Patch] Regenerate or update implementation readiness report sections that still claim missing Architecture/Epics docs [`_bmad-output/planning-artifacts/implementation-readiness-report-2026-04-26.md`:307]
+
+## Dev Notes
+
+### Technical Stack Requirements
+
+**Framework & Language:**
+- Next.js 15+ with App Router
+- TypeScript 5+ with strict mode
+- Node.js runtime
+
+**Authentication:**
+- BetterAuth (already installed in story 1.1)
+- OAuth providers: Google, Apple (already configured in story 1.1)
+- Email/password authentication using bcrypt
+- JWT session management with httpOnly cookies
+- Session expiration: 7 days of inactivity
+
+**Database:**
+- PostgreSQL 16+ (hosted on Supabase)
+- Drizzle ORM for type-safe database access
+- User model: id (text), email, name, emailVerified, createdAt, updatedAt
+- Add password hash field to User model for email/password authentication
+
+**Security:**
+- bcrypt for password hashing (minimum 12 rounds)
+- JWT tokens with httpOnly cookies
+- TLS 1.2+ for data in transit
+- Encryption at rest via Supabase
+- Failed login attempt logging
+
+**Project Structure:**
+- App Router architecture (app/ directory)
+- Auth routes in app/(auth)/
+- Dashboard routes in app/(dashboard)/
+- API routes in app/api/
+- Drizzle schema in drizzle/
+
+### Architecture Compliance
+
+**Naming Conventions:**
+- Database tables: snake_case plural (users)
+- Database columns: snake_case (password_hash, created_at)
+- Components: PascalCase (RegistrationForm, LoginForm)
+- Files: PascalCase for components, kebab-case for utilities
+- Functions: camelCase (registerUser, loginUser)
+
+**File Structure:**
+```
+advanced-todo/
+├── app/
+│   ├── (auth)/
+│   │   ├── layout.tsx
+│   │   ├── register/
+│   │   │   └── page.tsx
+│   │   └── login/
+│   │       └── page.tsx
+│   ├── (dashboard)/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── api/
+│   │   └── auth/
+│   │       ├── [...all]/
+│   │       │   └── route.ts (from story 1.1)
+│   │       └── register/
+│   │           └── route.ts
+├── lib/
+│   ├── auth.ts (from story 1.1)
+│   ├── db.ts (from story 1.1)
+│   └── validators/
+│       └── auth.ts
+├── drizzle/
+│   ├── schema.ts (from story 1.1 - needs password field)
+│   └── migrations/
+└── components/
+    └── auth/
+        ├── RegistrationForm.tsx
+        └── LoginForm.tsx
+```
+
+**API Response Format:**
+- Success: Direct data object (no wrapper)
+- Error: `{ error: { message: string, code: string, details?: any } }`
+- Dates: ISO 8601 strings
+
+### Security Requirements
+
+**Password Security:**
+- Hash passwords using bcrypt with minimum 12 rounds
+- Never store plain text passwords
+- Validate password strength (minimum 8 characters, mixed case, numbers, special characters)
+- Implement rate limiting for registration attempts
+
+**Session Security:**
+- JWT tokens stored in httpOnly cookies
+- Secure cookie configuration (Secure, HttpOnly, SameSite=Strict)
+- Session expiration after 7 days of inactivity
+- Implement session refresh mechanism
+
+**Data Security:**
+- All data encrypted at rest via Supabase PostgreSQL encryption
+- TLS 1.2+ for data in transit
+- Environment variables for secrets (never commit to git)
+- OAuth provider credentials in environment variables
+
+**Authentication Security:**
+- Failed login attempt logging for security monitoring
+- Rate limiting on authentication endpoints
+- CSRF protection via BetterAuth built-in
+- Secure redirect handling after OAuth callbacks
+
+### Database Schema Updates
+
+**User Model (add password field):**
+```typescript
+export const users = pgTable("users", {
+  id: text("id").primaryKey().$defaultFn(() => sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  password: text("password"), // NEW: For email/password authentication
+  emailVerified: timestamp("email_verified"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+```
+
+**Security Logs Table (NEW):**
+```typescript
+export const securityLogs = pgTable("security_logs", {
+  id: text("id").primaryKey().$defaultFn(() => sql`gen_random_uuid()`),
+  userId: text("user_id").references(() => users.id),
+  eventType: text("event_type").notNull(), // "login_attempt", "registration", "oauth_login"
+  success: boolean("success").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+})
+```
+
+**Indexes:**
+- Unique index on email (already exists from story 1.1)
+- Index on userId for security logs queries
+- Index on timestamp for security log queries
+
+### Environment Variables
+
+Add to existing .env.local from story 1.1:
+```
+# Already exists from story 1.1:
+DATABASE_URL="postgresql://user:password@host:5432/database"
+BETTER_AUTH_SECRET="your-secret-key-here"
+BETTER_AUTH_URL="http://localhost:3000"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+APPLE_CLIENT_ID="your-apple-client-id"
+APPLE_CLIENT_SECRET="your-apple-client-secret"
+
+# NEW for this story:
+BCRYPT_ROUNDS="12"
+```
+
+### Implementation Sequence
+
+1. **Database Schema Update** - Add password field to User model, create security logs table
+2. **Generate Migration** - Run `pnpm drizzle-kit generate` to create migration
+3. **Apply Migration** - Run `pnpm drizzle-kit migrate` to apply schema changes
+4. **Install bcrypt** - Run `pnpm install bcrypt` and `pnpm install -D @types/bcrypt`
+5. **Create Registration API** - Implement /api/auth/register endpoint with password hashing
+6. **Create Registration Page** - Build registration form with validation
+7. **Create Login Page** - Build login form with email/password and OAuth options
+8. **Configure Session Management** - Set up JWT tokens with httpOnly cookies
+9. **Create Dashboard** - Build basic dashboard page for redirect
+10. **Implement Security Logging** - Add failed login attempt logging
+11. **Add Accessibility Features** - Ensure WCAG AA compliance
+12. **Testing** - Test registration, login, OAuth flows, and security features
+
+### Testing Standards
+
+**Verification Steps:**
+- Test registration with valid email and password
+- Test registration with weak password (should fail validation)
+- Test registration with mismatched passwords (should fail)
+- Test login with correct credentials
+- Test login with incorrect credentials (should log failure)
+- Test Google OAuth login flow
+- Test Apple OAuth login flow
+- Test session expiration after 7 days
+- Test redirect to dashboard after login
+- Test security logging for failed attempts
+- Verify httpOnly cookies are set correctly
+- Test accessibility with keyboard navigation
+- Test screen reader announcements
+
+**Automated Tests Recommended:**
+- Unit tests for password hashing
+- Unit tests for form validation
+- Integration tests for registration API
+- Integration tests for login API
+- E2E tests for registration flow with Playwright
+- E2E tests for login flow with Playwright
+
+### Previous Story Intelligence
+
+**From Story 1.1:**
+- BetterAuth is already configured with Google and Apple OAuth providers
+- Authentication API route exists at `/app/api/auth/[...all]/route.ts`
+- Drizzle ORM is configured with PostgreSQL connection to Supabase
+- User model exists with: id, email, name, emailVerified, createdAt, updatedAt
+- Environment variables are set up in .env.local and .env.example
+- BetterAuth configuration is in `lib/auth.ts`
+- Database connection is in `lib/db.ts`
+
+**Key Learnings from Story 1.1:**
+- BetterAuth uses `[...all]` route convention (not `[...nextauth]`)
+- Environment variable naming uses `BETTER_AUTH_SECRET` (not `NEXTAUTH_SECRET`)
+- Drizzle ORM was chosen over Prisma for better performance
+- Always add runtime validation for environment variables
+- Always add error handling wrappers for API routes
+- Document migration rollback procedures in README
+
+**Files Created/Modified in Story 1.1:**
+- `app/api/auth/[...all]/route.ts` (NEW)
+- `lib/auth.ts` (NEW)
+- `lib/db.ts` (NEW)
+- `drizzle/schema.ts` (NEW) - needs password field added
+- `drizzle.config.ts` (NEW)
+- `drizzle/migrations/0000_sparkling_gladiator.sql` (NEW)
+- `.env.local` (NEW)
+- `.env.example` (NEW)
+- `README.md` (MODIFIED)
+- `package.json` (MODIFIED)
+
+### Project Structure Notes
+
+**Alignment with Architecture:**
+- Follows App Router structure as specified in architecture.md
+- Uses BetterAuth for authentication (as decided in architecture.md)
+- Implements email/password authentication in addition to OAuth
+- Security logging aligns with GDPR compliance requirements
+- Accessibility features align with WCAG 2.1 AA requirements
+
+**No Conflicts Detected:**
+- Story 1.1 established the authentication foundation
+- This story builds upon existing BetterAuth configuration
+- Database schema extension (adding password field) is backward compatible
+- OAuth providers already configured, just need to integrate with login UI
+
+### References
+
+- [Source: architecture.md#Authentication & Security] - BetterAuth configuration, OAuth providers, session management
+- [Source: architecture.md#Data Architecture] - Drizzle ORM, PostgreSQL schema design
+- [Source: architecture.md#API & Communication Patterns] - REST API design, error handling standards
+- [Source: architecture.md#Frontend Architecture] - React Context, Server Components, routing
+- [Source: prd.md#MVP Feature Set] - User authentication and account management requirements
+- [Source: prd.md#Accessibility Level] - WCAG 2.1 AA compliance requirements
+- [Source: ux-design-specification.md#Emotional Design Principles] - Delight, trust through transparency
+- [Source: epics.md#Story 1.2] - Original acceptance criteria and user story
+- [Source: implementation-artifacts/1-1-initialize-nextjs-project-with-authentication-foundation.md] - Previous story context and learnings
+
+## Dev Agent Record
+
+### Agent Model Used
+
+SWE-1.6
+
+### Debug Log References
+
+No dedicated debug log artifacts were captured; implementation completed using standard local verification and lint checks.
+
+### Completion Notes List
+
+- Epic 1 is in-progress in sprint status
+- Second story in authentication epic builds on foundation from story 1.1
+- BetterAuth email/password authentication enabled
+- Password field added to User model for email/password authentication
+- Security logs table created for authentication event logging
+- Registration page created with name, email, password fields and validation
+- Login page created with email/password and OAuth options (Google, Apple)
+- Dashboard page created for post-login redirect
+- Auth and dashboard layouts created with cosmic violet gradient
+- Environment variables updated with BCRYPT_ROUNDS
+- Session management configured with 7-day expiration
+- All forms include ARIA labels, keyboard navigation, and screen reader support
+- BetterAuth handles password hashing, JWT tokens, and OAuth callbacks
+- Supabase provides encryption at rest and TLS 1.2+ for data in transit
+- Shadcn components (Button, Input, Card, Label) added for UI consistency across the web app
+- Icon strategy implemented using lucide-react with custom Icon wrapper component (lib/components/icons.tsx)
+- Login page updated to use lucide-react icons (Globe for Google, Apple for Apple, Loader2 for loading states)
+- Icon wrapper component provides consistent sizing, coloring, and accessibility (aria-label support)
+- IconButton component ensures 44px minimum touch targets for interactive icons (WCAG compliance)
+- All icons follow Cosmic Violet theme color variants (primary, secondary, accent, surface, foreground, muted)
+- Playwright MCP configured for E2E testing - tests will be created in subsequent stories using MCP. Playwright MCP serves as the "eyes" for AI development - enables visual inspection of implemented features, identifies improvement opportunities, and discovers gaps beyond what was implemented
+
+### File List
+
+Files created:
+- app/(auth)/register/page.tsx (NEW)
+- app/(auth)/login/page.tsx (NEW)
+- app/(dashboard)/page.tsx (NEW)
+- app/(auth)/layout.tsx (NEW)
+- app/(dashboard)/layout.tsx (NEW)
+- components/ui/button.tsx (NEW - shadcn component)
+- components/ui/input.tsx (NEW - shadcn component)
+- components/ui/card.tsx (NEW - shadcn component)
+- components/ui/label.tsx (NEW - shadcn component)
+- lib/utils.ts (NEW - shadcn utility)
+- components.json (NEW - shadcn configuration)
+- lib/components/icons.tsx (NEW - icon strategy implementation)
+
+Files modified:
+- drizzle/schema.ts (MODIFIED - added password field to User model, added securityLogs table)
+- lib/auth.ts (MODIFIED - enabled emailAndPassword, added session configuration)
+- .env.local (MODIFIED - added BCRYPT_ROUNDS)
+- .env.example (MODIFIED - added BCRYPT_ROUNDS)
+- drizzle/migrations/0001_familiar_menace.sql (NEW - migration for schema changes)
+- app/globals.css (MODIFIED - shadcn styles added)
+
+DIFF CONTENT (Chunk 1 - Core auth implementation):
+diff --git a/advanced-todo/app/(auth)/login/page.tsx b/advanced-todo/app/(auth)/login/page.tsx
+new file mode 100644
+index 0000000..595ffd2
+--- /dev/null
++++ b/advanced-todo/app/(auth)/login/page.tsx
+@@ -0,0 +1,257 @@
++"use client"
++
++import { useEffect, useState } from "react"
++import { createAuthClient } from "better-auth/react"
++import { useRouter } from "next/navigation"
++import { Button } from "@/components/ui/button"
++import { Input } from "@/components/ui/input"
++import { Label } from "@/components/ui/label"
++import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
++import { Icon } from "@/lib/components/icons"
++import { Globe, Apple, Loader2 } from "lucide-react"
++
++const authClient = createAuthClient()
++
++export default function LoginPage() {
++  const router = useRouter()
++  const [formData, setFormData] = useState({
++    email: "",
++    password: "",
++  })
++  const [errors, setErrors] = useState<{ [key: string]: string }>({})
++  const [isLoading, setIsLoading] = useState(false)
++  const [isOAuthLoading, setIsOAuthLoading] = useState<{ [key: string]: boolean }>({})
++  const [providerAvailability, setProviderAvailability] = useState({
++    google: false,
++    apple: false,
++  })
++
++  useEffect(() => {
++    const fetchProviders = async () => {
++      try {
++        const response = await fetch("/api/auth/providers")
++        if (!response.ok) {
++          setProviderAvailability({ google: false, apple: false })
++          return
++        }
++        const data = await response.json()
++        setProviderAvailability({
++          google: Boolean(data.google),
++          apple: Boolean(data.apple),
++        })
++      } catch {
++        setProviderAvailability({ google: false, apple: false })
++      }
++    }
++
++    fetchProviders()
++  }, [])
++
++  const validateForm = () => {
++    const newErrors: { [key: string]: string } = {}
++
++    if (!formData.email) {
++      newErrors['email'] = "Email is required"
++    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
++      newErrors['email'] = "Invalid email address"
++    }
++
++    if (!formData.password) {
++      newErrors['password'] = "Password is required"
++    }
++
++    setErrors(newErrors)
++    return Object.keys(newErrors).length === 0
++  }
++
++  const handleEmailPasswordLogin = async (e: React.FormEvent) => {
++    e.preventDefault()
++    
++    if (!validateForm()) {
++      return
++    }
++
++    setIsLoading(true)
++    setErrors({})
++
++    try {
++      await authClient.signIn.email({
++        email: formData.email,
++        password: formData.password,
++      })
++
++      // Redirect to dashboard after successful login
++      router.push("/dashboard")
++    } catch (error: unknown) {
++      const errorMessage = error instanceof Error && /invalid|credentials|password|email/i.test(error.message)
++        ? "Invalid email or password."
++        : "Login failed. Please try again."
++      setErrors({
++        submit: errorMessage
++      })
++    } finally {
++      setIsLoading(false)
++    }
++  }
++
++  const handleOAuthLogin = async (provider: "google" | "apple") => {
++    setIsOAuthLoading((prev) => ({ ...prev, [provider]: true }))
++    setErrors({})
++
++    try {
++      await authClient.signIn.social({
++        provider,
++        callbackURL: "/dashboard",
++      })
++    } catch {
++      const errorMessage = `${provider} login failed. Please try again.`
++      setErrors({
++        submit: errorMessage
++      })
++    } finally {
++      setIsOAuthLoading((prev) => ({ ...prev, [provider]: false }))
++    }
++  }
++
++  return (
++    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-violet-500 via-purple-500 to-indigo-600 p-4">
++      <div className="max-w-md w-full">
++        <Card className="shadow-2xl">
++          <CardHeader className="space-y-2 text-center">
++            <CardTitle className="text-3xl font-bold text-foreground">Welcome Back</CardTitle>
++            <CardDescription className="text-muted">Sign in to your account</CardDescription>
++          </CardHeader>
++          <CardContent className="space-y-6">
++            {errors['submit'] && (
++              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg" role="alert">
++                <p className="font-medium">{errors['submit']}</p>
++              </div>
++            )}
++
++            {(providerAvailability.google || providerAvailability.apple) && (
++              <div className="space-y-3">
++                {providerAvailability.google && (
++                  <Button
++                    type="button"
++                    variant="outline"
++                    onClick={() => handleOAuthLogin("google")}
++                    disabled={isOAuthLoading['google'] || isLoading}
++                    className="w-full"
++                  >
++                    {isOAuthLoading['google'] ? (
++                      <Icon size="sm" decorative>
++                        <Loader2 className="animate-spin" />
++                      </Icon>
++                    ) : (
++                      <>
++                        <Icon size="sm" color="foreground" decorative>
++                          <Globe />
++                        </Icon>
++                        Sign in with Google
++                      </>
++                    )}
++                  </Button>
++                )}
++
++                {providerAvailability.apple && (
++                  <Button
++                    type="button"
++                    variant="outline"
++                    onClick={() => handleOAuthLogin("apple")}
++                    disabled={isOAuthLoading['apple'] || isLoading}
++                    className="w-full bg-foreground text-background hover:bg-secondary border-foreground"
++                  >
++                    {isOAuthLoading['apple'] ? (
++                      <Icon size="sm" decorative>
++                        <Loader2 className="animate-spin" />
++                      </Icon>
++                    ) : (
++                      <>
++                        <Icon size="sm" color="foreground" decorative>
++                          <Apple />
++                        </Icon>
++                        Sign in with Apple
++                      </>
++                    )}
++                  </Button>
++                )}
++              </div>
++            )}
++
++            <div className="relative">
++              <div className="absolute inset-0 flex items-center">
++                <div className="w-full border-t border-muted"></div>
++              </div>
++              <div className="relative flex justify-center text-xs uppercase">
++                <span className="px-2 bg-surface text-muted">Or continue with email</span>
++              </div>
++            </div>
++
++            <form onSubmit={handleEmailPasswordLogin} className="space-y-4" noValidate>
++              <div className="space-y-2">
++                <Label htmlFor="email">Email Address</Label>
++                <Input
++                  type="email"
++                  id="email"
++                  name="email"
++                  autoComplete="email"
++                  required
++                  aria-invalid={errors['email'] ? "true" : "false"}
++                  aria-describedby={errors['email'] ? "email-error" : undefined}
++                  placeholder="you@example.com"
++                  value={formData.email}
++                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
++                />
++                {errors['email'] && (
++                  <p id="email-error" className="text-sm text-red-600" role="alert">
++                    {errors['email']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="password">Password</Label>
++                <Input
++                  type="password"
++                  id="password"
++                  name="password"
++                  autoComplete="current-password"
++                  required
++                  aria-invalid={errors['password'] ? "true" : "false"}
++                  aria-describedby={errors['password'] ? "password-error" : undefined}
++                  placeholder="••••••••"
++                  value={formData.password}
++                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
++                />
++                {errors['password'] && (
++                  <p id="password-error" className="text-sm text-red-600" role="alert">
++                    {errors['password']}
++                  </p>
++                )}
++              </div>
++
++              <Button
++                type="submit"
++                disabled={isLoading || Object.values(isOAuthLoading).some(Boolean)}
++                className="w-full"
++              >
++                {isLoading ? "Signing in..." : "Sign In"}
++              </Button>
++            </form>
++          </CardContent>
++          <CardFooter className="text-center">
++            <p className="text-muted text-sm">
++              Don&apos;t have an account?{" "}
++              <a
++                href="/register"
++                className="font-medium text-primary hover:text-secondary transition-colors"
++              >
++                Sign up
++              </a>
++            </p>
++          </CardFooter>
++        </Card>
++      </div>
++    </div>
++  )
++}
+diff --git a/advanced-todo/app/(auth)/register/page.tsx b/advanced-todo/app/(auth)/register/page.tsx
+new file mode 100644
+index 0000000..6243e41
+--- /dev/null
++++ b/advanced-todo/app/(auth)/register/page.tsx
+@@ -0,0 +1,236 @@
++"use client"
++
++import { useEffect, useRef, useState } from "react"
++import { createAuthClient } from "better-auth/react"
++import { useRouter } from "next/navigation"
++import { Button } from "@/components/ui/button"
++import { Input } from "@/components/ui/input"
++import { Label } from "@/components/ui/label"
++import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
++
++const authClient = createAuthClient()
++
++export default function RegisterPage() {
++  const router = useRouter()
++  const [formData, setFormData] = useState({
++    name: "",
++    email: "",
++    password: "",
++    confirmPassword: "",
++  })
++  const [errors, setErrors] = useState<{ [key: string]: string }>({})
++  const [isLoading, setIsLoading] = useState(false)
++  const [successMessage, setSuccessMessage] = useState("")
++  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
++
++  useEffect(() => {
++    return () => {
++      if (redirectTimeoutRef.current) {
++        clearTimeout(redirectTimeoutRef.current)
++      }
++    }
++  }, [])
++
++  const validateForm = () => {
++    const newErrors: { [key: string]: string } = {}
++
++    if (!formData.name) {
++      newErrors['name'] = "Name is required"
++    }
++
++    if (!formData.email) {
++      newErrors['email'] = "Email is required"
++    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
++      newErrors['email'] = "Invalid email address"
++    }
++
++    if (!formData.password) {
++      newErrors['password'] = "Password is required"
++    } else if (formData.password.length < 8) {
++      newErrors['password'] = "Password must be at least 8 characters"
++    } else if (!/[A-Z]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one uppercase letter"
++    } else if (!/[a-z]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one lowercase letter"
++    } else if (!/[0-9]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one number"
++    } else if (!/[^A-Za-z0-9]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one special character"
++    }
++
++    if (!formData.confirmPassword) {
++      newErrors['confirmPassword'] = "Please confirm your password"
++    } else if (formData.password !== formData.confirmPassword) {
++      newErrors['confirmPassword'] = "Passwords do not match"
++    }
++
++    setErrors(newErrors)
++    return Object.keys(newErrors).length === 0
++  }
++
++  const handleSubmit = async (e: React.FormEvent) => {
++    e.preventDefault()
++    
++    if (!validateForm()) {
++      return
++    }
++
++    setIsLoading(true)
++    setErrors({})
++    setSuccessMessage("")
++
++    try {
++      await authClient.signUp.email({
++        email: formData.email,
++        password: formData.password,
++        name: formData.name,
++      })
++
++      setSuccessMessage("Registration successful! You can now log in.")
++      if (redirectTimeoutRef.current) {
++        clearTimeout(redirectTimeoutRef.current)
++      }
++      redirectTimeoutRef.current = setTimeout(() => {
++        router.push("/login")
++      }, 2000)
++    } catch (error: unknown) {
++      const errorMessage = error instanceof Error ? error.message : "Registration failed. Please try again."
++      setErrors({
++        submit: errorMessage
++      })
++    } finally {
++      setIsLoading(false)
++    }
++  }
++
++  return (
++    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-violet-500 via-purple-500 to-indigo-600 p-4">
++      <div className="max-w-md w-full">
++        <Card className="shadow-2xl">
++          <CardHeader className="space-y-2 text-center">
++            <CardTitle className="text-3xl font-bold text-foreground">Create Account</CardTitle>
++            <CardDescription className="text-muted">Join AdvancedToDo today</CardDescription>
++          </CardHeader>
++          <CardContent className="space-y-6">
++            {successMessage && (
++              <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg" role="alert">
++                <p className="font-medium">{successMessage}</p>
++              </div>
++            )}
++
++            {errors['submit'] && (
++              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg" role="alert">
++                <p className="font-medium">{errors['submit']}</p>
++              </div>
++            )}
++
++            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
++              <div className="space-y-2">
++                <Label htmlFor="name">Name</Label>
++                <Input
++                  type="text"
++                  id="name"
++                  name="name"
++                  autoComplete="name"
++                  required
++                  aria-invalid={errors['name'] ? "true" : "false"}
++                  aria-describedby={errors['name'] ? "name-error" : undefined}
++                  placeholder="John Doe"
++                  value={formData.name}
++                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
++                />
++                {errors['name'] && (
++                  <p id="name-error" className="text-sm text-red-600" role="alert">
++                    {errors['name']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="email">Email Address</Label>
++                <Input
++                  type="email"
++                  id="email"
++                  name="email"
++                  autoComplete="email"
++                  required
++                  aria-invalid={errors['email'] ? "true" : "false"}
++                  aria-describedby={errors['email'] ? "email-error" : undefined}
++                  placeholder="you@example.com"
++                  value={formData.email}
++                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
++                />
++                {errors['email'] && (
++                  <p id="email-error" className="text-sm text-red-600" role="alert">
++                    {errors['email']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="password">Password</Label>
++                <Input
++                  type="password"
++                  id="password"
++                  name="password"
++                  autoComplete="new-password"
++                  required
++                  aria-invalid={errors['password'] ? "true" : "false"}
++                  aria-describedby={errors['password'] ? "password-error" : undefined}
++                  placeholder="••••••••"
++                  value={formData.password}
++                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
++                />
++                {errors['password'] && (
++                  <p id="password-error" className="text-sm text-red-600" role="alert">
++                    {errors['password']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="confirmPassword">Confirm Password</Label>
++                <Input
++                  type="password"
++                  id="confirmPassword"
++                  name="confirmPassword"
++                  autoComplete="new-password"
++                  required
++                  aria-invalid={errors['confirmPassword'] ? "true" : "false"}
++                  aria-describedby={errors['confirmPassword'] ? "confirm-password-error" : undefined}
++                  placeholder="••••••••"
++                  value={formData.confirmPassword}
++                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
++                />
++                {errors['confirmPassword'] && (
++                  <p id="confirm-password-error" className="text-sm text-red-600" role="alert">
++                    {errors['confirmPassword']}
++                  </p>
++                )}
++              </div>
++
++              <Button
++                type="submit"
++                disabled={isLoading}
++                className="w-full"
++              >
++                {isLoading ? "Creating account..." : "Create Account"}
++              </Button>
++            </form>
++          </CardContent>
++          <CardFooter className="text-center">
++            <p className="text-muted text-sm">
++              Already have an account?{" "}
++              <a
++                href="/login"
++                className="font-medium text-primary hover:text-secondary transition-colors"
++              >
++                Sign in
++              </a>
++            </p>
++          </CardFooter>
++        </Card>
++      </div>
++    </div>
++  )
++}
+diff --git a/advanced-todo/app/api/auth/[...all]/route.ts b/advanced-todo/app/api/auth/[...all]/route.ts
+index f7be036..b09add6 100644
+--- a/advanced-todo/app/api/auth/[...all]/route.ts
++++ b/advanced-todo/app/api/auth/[...all]/route.ts
+@@ -1,11 +1,97 @@
+ import { auth } from "@/lib/auth"
+ import { toNextJsHandler } from "better-auth/next-js"
+ import { NextResponse } from "next/server"
++import { db } from "@/lib/db"
++import { securityLogs } from "@/drizzle/schema"
++import { and, eq, gte, sql } from "drizzle-orm"
++
++const RATE_LIMIT_WINDOW_MS = 60_000
++const RATE_LIMIT_MAX_REQUESTS = 10
+ 
+ const handler = toNextJsHandler(auth)
+ 
++function getRequestMetadata(req: Request) {
++  return {
++    ipAddress: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown",
++    userAgent: req.headers.get("user-agent") || null,
++    path: new URL(req.url).pathname,
++  }
++}
++
++async function isRateLimited(req: Request) {
++  const { ipAddress, userAgent, path } = getRequestMetadata(req)
++  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS)
++  const eventType = `auth_request:${path}`
++
++  const [result] = await db
++    .select({
++      count: sql<number>`count(*)`,
++    })
++    .from(securityLogs)
++    .where(
++      and(
++        eq(securityLogs.eventType, eventType),
++        eq(securityLogs.ipAddress, ipAddress),
++        gte(securityLogs.timestamp, windowStart)
++      )
++    )
++
++  const requestCount = Number(result?.count ?? 0)
++  if (requestCount >= RATE_LIMIT_MAX_REQUESTS) {
++    await db.insert(securityLogs).values({
++      eventType: "auth_rate_limited",
++      success: false,
++      ipAddress,
++      userAgent,
++    })
++    return true
++  }
++
++  await db.insert(securityLogs).values({
++    eventType,
++    success: true,
++    ipAddress,
++    userAgent,
++  })
++
++  if (requestCount + 1 >= RATE_LIMIT_MAX_REQUESTS) {
++    return false
++  }
++
++  return false
++}
++
++function shouldLogFailedLoginAttempt(req: Request, response: Response) {
++  const pathname = new URL(req.url).pathname
++  const isEmailLoginPath = pathname.includes("/sign-in/email")
++  const isFailedLoginStatus = [400, 401, 403, 422].includes(response.status)
++  return isEmailLoginPath && isFailedLoginStatus
++}
++
++async function logFailedLoginAttempt(req: Request) {
++  try {
++    const { ipAddress, userAgent } = getRequestMetadata(req)
++
++    await db.insert(securityLogs).values({
++      eventType: "login_attempt",
++      success: false,
++      ipAddress,
++      userAgent,
++    })
++  } catch (error) {
++    console.error("Security logging failed:", error)
++  }
++}
++
+ async function withErrorHandler(handler: (req: Request) => Promise<Response>, req: Request) {
+   try {
++    if (await isRateLimited(req)) {
++      return NextResponse.json(
++        { error: { message: "Too many authentication attempts. Please try again shortly.", code: "RATE_LIMITED" } },
++        { status: 429 }
++      )
++    }
++
+     return await handler(req)
+   } catch (error) {
+     console.error("Auth error:", error)
+@@ -21,5 +107,11 @@ export async function GET(req: Request) {
+ }
+ 
+ export async function POST(req: Request) {
+-  return withErrorHandler(handler.POST, req)
++  const response = await withErrorHandler(handler.POST, req)
++
++  if (shouldLogFailedLoginAttempt(req, response)) {
++    await logFailedLoginAttempt(req)
++  }
++
++  return response
+ }
+diff --git a/advanced-todo/app/api/auth/providers/route.ts b/advanced-todo/app/api/auth/providers/route.ts
+new file mode 100644
+index 0000000..4c5adb0
+--- /dev/null
++++ b/advanced-todo/app/api/auth/providers/route.ts
+@@ -0,0 +1,8 @@
++import { NextResponse } from "next/server"
++
++export async function GET() {
++  return NextResponse.json({
++    google: Boolean(process.env['GOOGLE_CLIENT_ID'] && process.env['GOOGLE_CLIENT_SECRET']),
++    apple: Boolean(process.env['APPLE_CLIENT_ID'] && process.env['APPLE_CLIENT_SECRET']),
++  })
++}
+diff --git a/advanced-todo/lib/auth.ts b/advanced-todo/lib/auth.ts
+index 8232eed..352182b 100644
+--- a/advanced-todo/lib/auth.ts
++++ b/advanced-todo/lib/auth.ts
+@@ -13,19 +13,24 @@ export const auth = betterAuth({
+     },
+   }),
+   emailAndPassword: {
+-    enabled: false, // OAuth only for now
++    enabled: true, // Enable email/password authentication
++    requireEmailVerification: false, // Optional: can be enabled later
+   },
+   socialProviders: {
+     google: {
+-      clientId: process.env.GOOGLE_CLIENT_ID || "",
+-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+-      enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
++      clientId: process.env['GOOGLE_CLIENT_ID'] || "",
++      clientSecret: process.env['GOOGLE_CLIENT_SECRET'] || "",
++      enabled: !!(process.env['GOOGLE_CLIENT_ID'] && process.env['GOOGLE_CLIENT_SECRET']),
+     },
+     apple: {
+-      clientId: process.env.APPLE_CLIENT_ID || "",
+-      clientSecret: process.env.APPLE_CLIENT_SECRET || "",
+-      enabled: !!(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
++      clientId: process.env['APPLE_CLIENT_ID'] || "",
++      clientSecret: process.env['APPLE_CLIENT_SECRET'] || "",
++      enabled: !!(process.env['APPLE_CLIENT_ID'] && process.env['APPLE_CLIENT_SECRET']),
+     },
+   },
+-  secret: process.env.BETTER_AUTH_SECRET,
++  secret: process.env['BETTER_AUTH_SECRET'],
++  session: {
++    expiresIn: 60 * 60 * 24 * 7, // 7 days
++    updateAge: 60 * 60 * 24, // 1 day
++  },
+ })

@@ -159,7 +159,18 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 **Architectural Decisions Provided by Starter:**
 
 **Language & Runtime:**
-- TypeScript 5+ with strict type checking
+- TypeScript 5+ with strict type checking and best practices
+- TypeScript strict mode enabled with additional compiler options:
+  - `noUncheckedIndexedAccess`: Prevents undefined access on array/object properties
+  - `noImplicitReturns`: Ensures all code paths return a value
+  - `noFallthroughCasesInSwitch`: Prevents switch case fallthrough
+  - `noUnusedLocals`: Prevents unused local variables
+  - `noUnusedParameters`: Prevents unused function parameters
+  - `noImplicitOverride`: Ensures override methods explicitly marked
+  - `exactOptionalPropertyTypes`: Strict optional property checking
+  - `noPropertyAccessFromIndexSignature`: Requires proper property access
+  - `forceConsistentCasingInFileNames`: Enforces consistent file naming
+- No type hacks allowed (no `@ts-ignore`, `@ts-expect-error`, or `as any`)
 - Node.js runtime with Next.js 15+ framework
 - Modern ES modules with tree-shaking support
 
@@ -174,8 +185,10 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 - Automatic bundle size optimization
 
 **Testing Framework:**
-- Jest configuration included (can add Playwright for E2E testing as specified in PRD)
+- Playwright MCP for E2E testing (configured for automated browser testing)
 - Testing utilities for React components
+- E2E tests will be created using Playwright MCP in subsequent stories
+- Playwright MCP serves as the "eyes" for AI development - enables visual inspection of implemented features, identifies improvement opportunities, and discovers gaps beyond what was implemented
 
 **Code Organization:**
 - App Router structure (app/ directory with route-based organization)
@@ -312,6 +325,19 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 - **Decision:** shadcn-ui components as base, custom components for unique features (voice input, task cards, animations)
 - **Rationale:** shadcn-ui provides accessible foundation, custom components for unique "cosmic violet" experience, full code ownership
 - **Affects:** UI development workflow, component library structure
+- **Status:** ✅ CONFIGURED - components.json created, Button/Input/Card/Label components added, auth pages refactored to use shadcn components
+
+**Icon Strategy:**
+- **Decision:** lucide-react for all icons with custom Icon wrapper component for consistent theming
+- **Rationale:** Tree-shakeable icon library (supports <200KB bundle requirement), 1,000+ icons, accessible by default, seamless Tailwind CSS integration
+- **Implementation:** Custom Icon component in `lib/components/icons.tsx` with:
+  - Size variants (xs, sm, md, lg, xl, 2xl) following touch target guidelines (minimum 44px for touch)
+  - Color variants mapped to Cosmic Violet theme (primary, secondary, accent, surface, foreground, muted)
+  - IconButton component for touch-friendly interactions with consistent 44px minimum touch targets
+  - IconWithLabel component for accessibility with clear text labels
+  - All icons support aria-label and decorative mode for screen readers
+- **Affects:** UI consistency, accessibility compliance, bundle size optimization
+- **Status:** ✅ IMPLEMENTED - Icon utility components created, inline SVGs replaced with lucide-react icons in auth pages
 
 **Routing Strategy:**
 - **Decision:** Next.js App Router with file-based routing
@@ -470,6 +496,23 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 - Loading state persistence: Clear on success or error
 - Loading UI patterns: Skeleton loaders for content, spinners for actions
 
+**UI/Component Patterns:**
+- **Icon usage:** ALL icons must use the Icon wrapper component from `lib/components/icons.tsx`
+  - Never use lucide-react icons directly without the Icon wrapper
+  - Size variants: xs (16px), sm (20px), md (24px), lg (32px), xl (40px), 2xl (48px)
+  - Color variants mapped to Cosmic Violet theme (primary, secondary, accent, surface, foreground, muted)
+  - Interactive icons must use IconButton component (ensures 44px minimum touch targets)
+  - All icons must have ariaLabel prop unless decorative={true}
+- **Component naming:** PascalCase for components (TaskCard, VoiceInputButton)
+- **Touch targets:** Minimum 44px for all interactive elements (WCAG 2.1 AA compliance)
+- **Color usage:** Use semantic color variants from Cosmic Violet theme, never hardcode colors
+- **shadcn-ui components:** ALL UI components must use shadcn-ui as the foundation
+  - Use existing shadcn components (Button, Input, Card, Dialog, etc.) before creating custom components
+  - Customize via Tailwind classes and component variants, never modify base component structure
+  - Maintain accessibility - never remove ARIA props from shadcn components (built on Radix UI)
+  - Integrate icons using Icon component inside shadcn components
+  - Use IconButton for interactive icons (ensures 44px touch targets)
+
 ### Enforcement Guidelines
 
 **All AI Agents MUST:**
@@ -480,6 +523,13 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 - Use immutable state updates only
 - Write tests co-located with source files
 - Include TypeScript types for all functions and components
+- **Use Icon wrapper component for ALL icons** - never use lucide-react icons directly
+- **Follow icon usage guidelines** - use appropriate size/color variants, ensure accessibility with ariaLabel
+- **Use IconButton for interactive icons** - ensures 44px minimum touch targets for WCAG compliance
+- **Use shadcn-ui components as foundation** - never build UI components from scratch unless absolutely necessary
+- **Check existing shadcn components first** - use Button, Input, Card, Dialog, etc. before creating custom components
+- **Customize shadcn via Tailwind classes** - never modify base component structure or remove ARIA props
+- **Maintain accessibility foundation** - shadcn components are built on Radix UI, preserve this accessibility
 
 **Pattern Enforcement:**
 - ESLint rules for naming conventions
@@ -513,6 +563,55 @@ export function TaskCard({ task }: TaskCardProps) {
   // ...
 }
 
+// Icon usage (CORRECT)
+import { Icon } from "@/lib/components/icons"
+import { Check, Trash2 } from "lucide-react"
+
+// Decorative icon
+<Icon size="sm" color="primary" decorative>
+  <Check />
+</Icon>
+
+// Interactive icon button
+<IconButton
+  size="md"
+  color="secondary"
+  ariaLabel="Delete task"
+  onClick={handleDelete}
+>
+  <Trash2 />
+</IconButton>
+
+// shadcn component usage (CORRECT)
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
+// Button with icon
+<Button>
+  <Icon size="sm" decorative>
+    <Plus />
+  </Icon>
+  Add Task
+</Button>
+
+// Card with proper structure
+<Card>
+  <CardHeader>
+    <CardTitle>Task Summary</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <p>Your task details here</p>
+  </CardContent>
+</Card>
+
+// Form with shadcn components
+<div className="space-y-2">
+  <Label htmlFor="email">Email</Label>
+  <Input id="email" type="email" placeholder="you@example.com" />
+</div>
+
 // Error handling
 { error && <ErrorMessage message={error.message} />}
 ```
@@ -532,6 +631,50 @@ task.isCompleted = true;  // Should be: setTask({...task, isCompleted: true})
 
 // ❌ Wrong: Tests in separate directory
 tests/TaskCard.test.tsx  // Should be: TaskCard.test.tsx co-located
+
+// ❌ Wrong: Using lucide icons directly without Icon wrapper
+<Check className="w-5 h-5" />  // Should be: <Icon size="sm"><Check /></Icon>
+
+// ❌ Wrong: Hardcoded icon sizes and colors
+<Check className="w-6 h-6 text-purple-500" />  // Should be: <Icon size="md" color="primary"><Check /></Icon>
+
+// ❌ Wrong: Missing accessibility
+<IconButton onClick={handleDelete}>
+  <Trash2 />
+</IconButton>  // Should be: <IconButton ariaLabel="Delete task" ...>
+
+// ❌ Wrong: Interactive icon without IconButton (violates touch targets)
+<div onClick={handleDelete}>
+  <Trash2 className="w-5 h-5" />
+</div>  // Should be: <IconButton ...>
+
+// ❌ Wrong: Building custom button instead of using shadcn Button
+<button className="px-4 py-2 bg-purple-500 rounded">
+  Click me
+</button>  // Should be: <Button>Click me</Button>
+
+// ❌ Wrong: Custom card structure instead of shadcn Card
+<div className="border rounded-lg p-4">
+  <h2 className="text-xl font-bold">Title</h2>
+  <p>Content</p>
+</div>  // Should be: <Card><CardHeader><CardTitle>Title</CardTitle></CardHeader><CardContent>Content</CardContent></Card>
+
+// ❌ Wrong: Removing ARIA props from shadcn components
+<Button aria-label={undefined}>Submit</Button>  // Should be: preserve all ARIA props from shadcn
+
+// ❌ Wrong: Modifying shadcn component base structure
+const CustomButton = ({ children, ...props }) => (
+  <button {...props}>{children}</button>
+)  // Should be: extend shadcn Button component, not replace it
+
+// ❌ Wrong: Inline styles instead of Tailwind classes
+<Button style={{ backgroundColor: '#7b2cbf' }}>Custom</Button>  // Should be: use Tailwind classes or theme colors
+
+// ❌ Wrong: Form without shadcn Label/Input components
+<div>
+  <span>Email:</span>
+  <input type="email" className="border p-2" />
+</div>  // Should be: <Label>Email</Label><Input type="email" />
 ```
 
 ## Project Structure & Boundaries

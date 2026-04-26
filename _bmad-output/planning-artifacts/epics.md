@@ -100,6 +100,7 @@ NFR33: Database replication ensures data durability across availability zones
 ### Additional Requirements
 
 - Starter Template: Use official create-next-app with TypeScript, Tailwind CSS, ESLint, and App Router (initialization command: pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*")
+- TypeScript Best Practices: Strict mode enabled with noUncheckedIndexedAccess, noImplicitReturns, noFallthroughCasesInSwitch, noUnusedLocals, noUnusedParameters, noImplicitOverride, exactOptionalPropertyTypes, noPropertyAccessFromIndexSignature, forceConsistentCasingInFileNames; no type hacks allowed (no @ts-ignore, @ts-expect-error, or as any)
 - Database: PostgreSQL with Drizzle ORM for data access and schema management
 - Real-time sync: Server-Sent Events (SSE) or WebSocket for sub-500ms sync latency with optimistic UI updates
 - Authentication: BetterAuth with OAuth 2.0/JWT for secure user authentication
@@ -113,7 +114,7 @@ NFR33: Database replication ensures data durability across availability zones
 - Naming Conventions: PascalCase for components/models, camelCase for functions/variables, kebab-case for files
 - Error Handling: Error boundaries at route level, user-friendly error messages, technical details logged separately
 - Loading States: Local loading states with isLoading prefix, skeleton loaders for content, spinners for actions
-- Testing: Jest for unit tests, Playwright for E2E testing, tests co-located with source files
+- Testing: Playwright MCP for E2E testing, tests co-located with source files. Playwright MCP serves as the "eyes" for AI development - enables visual inspection of implemented features, identifies improvement opportunities, and discovers gaps beyond what was implemented
 - Deployment: CDN for static asset delivery, auto-scaling for traffic spikes, database replication for durability
 - Monitoring: Real-time metrics dashboard, automated backup system, audit logging for security events
 - Security: Encryption at rest and in transit (TLS 1.2+), API rate limiting, GDPR compliance workflows
@@ -875,14 +876,16 @@ As a developer,
 I want to integrate and customize shadcn-ui components,
 So that the application has accessible, polished UI components with the cosmic violet theme.
 
+**Status:** ✅ IN PROGRESS - shadcn initialized, base components (Button, Input, Card, Label) added, auth pages refactored
+
 **Acceptance Criteria:**
 
 **Given** the design system is configured
 **When** I install shadcn-ui with Next.js and TypeScript
-**Then** the shadcn CLI is configured for the project
-**And** I install the base components: Button, Card, Input, Dialog, DropdownMenu
+**Then** the shadcn CLI is configured for the project ✅ COMPLETE
+- **And** I install the base components: Button, Card, Input, Dialog, DropdownMenu ✅ Button/Input/Card/Label added
 **When** I customize the Button component
-**Then** it uses the royal-violet color for primary actions
+**Then** it uses the royal-violet color for primary actions ⏳ PENDING
 **And** it uses the indigo-velvet color for secondary actions
 **And** it has the cosmic violet hover states
 **And** it maintains accessibility features from Radix UI

@@ -355,20 +355,20 @@ When things go wrong, be deeply sorry and provide conventional backup flows. Mai
 - Already planned in brainstorming session (shadcn-ui MCP server integration)
 - Compatible with Next.js and React ecosystem
 - Works with Tailwind CSS for utility-first styling
-- Integrates with Playwright for testing (as planned in brainstorming)
+- Integrates with Playwright MCP for testing - serves as the "eyes" for AI development, enabling visual inspection of implemented features, identifying improvement opportunities, and discovering gaps beyond what was implemented
 
 ### Implementation Approach
 
 **Foundation Setup:**
-- Install shadcn-ui with Next.js and TypeScript
-- Configure Tailwind CSS with custom design tokens
-- Set up Radix UI primitives for accessible components
-- Configure Framer Motion for animations
+- ✅ Install shadcn-ui with Next.js and TypeScript
+- ✅ Configure Tailwind CSS with custom design tokens (Nova preset)
+- ✅ Set up Radix UI primitives for accessible components
+- ⏳ Configure Framer Motion for animations (pending)
 
 **Component Strategy:**
-- Use shadcn-ui components as starting point for standard UI elements (buttons, inputs, cards)
-- Create custom components for unique interactions (voice input, creative task completion, visual summaries)
-- Build signature animated components for emotional moments (task completion, progress visualization)
+- ✅ Use shadcn-ui components as starting point for standard UI elements (buttons, inputs, cards) - AUTH PAGES COMPLETED
+- ⏳ Create custom components for unique interactions (voice input, creative task completion, visual summaries)
+- ⏳ Build signature animated components for emotional moments (task completion, progress visualization)
 - Develop custom layouts that break traditional ToDo patterns
 
 **Animation System:**
@@ -411,6 +411,159 @@ When things go wrong, be deeply sorry and provide conventional backup flows. Mai
 - Keyboard navigation support for all custom interactions
 - Screen reader optimization for non-traditional UI patterns
 - Focus management for animated transitions
+
+### 1.2 Icon Strategy
+
+**Icon Library: lucide-react**
+- Tree-shakeable icon library with 1,000+ icons
+- Accessible by default with proper ARIA support
+- Seamless Tailwind CSS integration
+- Supports <200KB bundle size requirement
+
+**Icon System Components:**
+- **Icon wrapper component** (`lib/components/icons.tsx`) with:
+  - Size variants: xs (16px), sm (20px), md (24px), lg (32px), xl (40px), 2xl (48px)
+  - Color variants mapped to Cosmic Violet theme:
+    - `primary` (royal-violet) - Primary actions and highlights
+    - `secondary` (indigo-velvet) - Secondary actions
+    - `accent` (lavender-purple) - Accents and decorative elements
+    - `surface` (indigo-ink) - Surface elements
+    - `foreground` (gray-900) - Primary text and foreground elements
+    - `muted` (gray-500) - Disabled or secondary text
+  - Accessibility: aria-label support and decorative mode for screen readers
+
+- **IconButton component** for touch-friendly interactions:
+  - Minimum 44px touch targets (WCAG 2.1 AA compliance)
+  - Variants: ghost, outline, solid
+  - Consistent spacing and hover states
+
+- **IconWithLabel component** for enhanced accessibility:
+  - Clear text labels alongside icons
+  - Flexible label positioning (left, right, top, bottom)
+  - Screen reader optimization
+
+**Icon Usage Guidelines:**
+- **ALL icons must use the Icon wrapper component** - never use lucide icons directly
+- **Size selection based on context:**
+  - xs (16px): Inline icons within text, compact lists
+  - sm (20px): Button icons, form labels
+  - md (24px): Default size for most UI elements
+  - lg (32px): Section headers, important actions
+  - xl (40px): Hero icons, primary CTAs
+  - 2xl (48px): Large decorative icons, empty states
+- **Color selection follows semantic meaning:**
+  - Use `primary` for main actions and highlights
+  - Use `secondary` for less prominent actions
+  - Use `accent` for decorative elements and visual interest
+  - Use `surface` for icons on dark backgrounds
+  - Use `foreground` for standard icons on light backgrounds
+  - Use `muted` for disabled states or less important information
+- **Accessibility requirements:**
+  - All interactive icons must have `ariaLabel` prop
+  - Decorative icons must set `decorative={true}`
+  - Icon buttons must use IconButton component (ensures 44px touch targets)
+- **Touch-first design:**
+  - All icon interactions use IconButton with minimum 44px targets
+  - Icons in buttons use appropriate size (sm or md)
+  - Hover and active states provide clear feedback
+
+**Icon Selection for Features:**
+- **Voice input:** Mic, Waveform, Loader2 (processing state)
+- **Task completion:** Check, CheckCircle2, Sparkles (celebration)
+- **Sync status:** Sync, RefreshCw, Cloud, CloudOff, Wifi, WifiOff
+- **Categories:** Tag, Folder, Calendar, List, Grid
+- **Priority:** Flag, ArrowUp, ArrowDown, AlertCircle
+- **Actions:** Plus, Trash2, Edit2, Menu, MoreVertical, Settings
+- **Navigation:** Home, Dashboard, ChevronLeft, ChevronRight
+- **User:** User, LogOut, Settings, Bell (notifications)
+
+**Implementation Status:**
+- ✅ Icon utility components created in `lib/components/icons.tsx`
+- ✅ Auth pages updated to use lucide-react icons (replaced inline SVGs)
+- ✅ Architecture documentation updated with icon strategy
+
+### 1.3 shadcn-ui Component Guidelines
+
+**shadcn-ui Foundation:**
+- Custom shadcn-ui components built on Radix UI primitives with Tailwind CSS styling
+- Full code ownership - components are copied into the project, not imported as a library
+- Complete customization control while maintaining accessibility foundation
+
+**Component Usage Rules:**
+- **ALL UI components must use shadcn-ui as the foundation** - never build from scratch unless absolutely necessary
+- **Use existing shadcn components** before creating custom components (Button, Input, Card, Dialog, etc.)
+- **Customize shadcn components** via Tailwind classes and component variants, never modify the base component structure
+- **Maintain accessibility** - shadcn components are built on Radix UI with proper ARIA support, preserve this foundation
+
+**Component Customization Approach:**
+- **Variant system:** Use class-variance-authority (cva) for component variants (size, color, style)
+- **Tailwind classes:** Customize appearance through Tailwind utility classes, not inline styles
+- **Theme integration:** Map component colors to Cosmic Violet theme via CSS variables
+- **Props interface:** Extend shadcn component props, never remove required accessibility props
+
+**Component Selection Guidelines:**
+- **Form elements:** Input, Label, Textarea, Select, Checkbox, Radio, Switch
+- **Layout:** Card, Separator, ScrollArea, Tabs
+- **Feedback:** Toast, Alert, Dialog, AlertDialog, Sheet
+- **Navigation:** Button, Link, Breadcrumb, Pagination
+- **Data display:** Table, Avatar, Badge, Skeleton
+- **Interactive:** Dropdown Menu, Context Menu, Command, Popover, Tooltip
+
+**shadcn Component Integration with Icon Strategy:**
+- **Icons in buttons:** Use Icon component inside shadcn Button component
+- **Icon buttons:** Use IconButton wrapper around lucide icons (ensures 44px touch targets)
+- **Form labels:** Combine shadcn Label with Icon for visual enhancement
+- **Status indicators:** Use Badge component with Icon for sync status, priority, etc.
+
+**Component Composition Patterns:**
+```tsx
+// Button with icon
+<Button>
+  <Icon size="sm" decorative>
+    <Plus />
+  </Icon>
+  Add Task
+</Button>
+
+// Icon button (touch-friendly)
+<IconButton ariaLabel="Settings" onClick={handleSettings}>
+  <Settings />
+</IconButton>
+
+// Card with icon header
+<Card>
+  <CardHeader>
+    <CardTitle>
+      <Icon size="md" color="primary" decorative>
+        <Sparkles />
+      </Icon>
+      Task Summary
+    </CardTitle>
+  </CardHeader>
+</Card>
+```
+
+**Accessibility Requirements:**
+- **Never remove ARIA props** from shadcn components (they're built into Radix UI primitives)
+- **Custom components** must maintain the same accessibility level as shadcn components
+- **Keyboard navigation** must be preserved for all interactive components
+- **Screen reader support** must be tested for custom component modifications
+
+**Performance Considerations:**
+- **Tree-shaking:** shadcn components are imported individually, not as a bundle
+- **Code splitting:** Components are only included when actually used
+- **Bundle size:** Using shadcn supports the <200KB bundle size requirement
+
+**Component State Management:**
+- **Controlled components:** Use React state for form inputs and controlled components
+- **Uncontrolled components:** Use ref for simple cases where controlled state isn't needed
+- **Server components:** shadcn components work with Next.js Server Components
+
+**Implementation Status:**
+- ✅ components.json configured with Cosmic Violet theme
+- ✅ Base components installed: Button, Input, Card, Label
+- ✅ Auth pages refactored to use shadcn components
+- ✅ Icon strategy integrated with shadcn components
 
 ## 2. Core User Experience
 

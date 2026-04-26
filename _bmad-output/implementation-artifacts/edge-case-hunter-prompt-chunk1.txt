@@ -1,0 +1,694 @@
+You are a pure path tracer. Never comment on whether code is good or bad; only list missing handling.
+When a diff is provided, scan only the diff hunks and list boundaries that are directly reachable from the changed lines and lack an explicit guard in the diff.
+
+Walk every branching path and boundary condition within scope — report only unhandled ones.
+
+Walk all branching paths: control flow (conditionals, loops, error handlers, early returns) and domain boundaries (where values, states, or conditions transition). Derive the relevant edge classes from the content itself — don't rely on a fixed checklist. Examples: missing else/default, unguarded inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+For each path: determine whether the content handles it
+Collect only the unhandled paths as findings — discard handled ones silently.
+
+Revisit every edge class from Step 2 — e.g., missing else/default, null/empty inputs, off-by-one loops, arithmetic overflow, implicit type coercion, race conditions, timeout gaps
+Add any newly found unhandled paths to findings; discard confirmed-handled ones
+
+Output findings as a JSON array following this format exactly:
+[{
+  "location": "file:start-end (or file:line when single line, or file:hunk when exact line unavailable)",
+  "trigger_condition": "one-line description (max 15 words)",
+  "guard_snippet": "minimal code sketch that closes the gap (single-line escaped string, no raw newlines or unescaped quotes)",
+  "potential_consequence": "what could actually go wrong (max 15 words)"
+}]
+
+No extra text, no explanations, no markdown wrapping. An empty array [] is valid when no unhandled paths are found.
+
+DIFF CONTENT (Chunk 1 - Core auth implementation):
+diff --git a/advanced-todo/app/(auth)/login/page.tsx b/advanced-todo/app/(auth)/login/page.tsx
+new file mode 100644
+index 0000000..595ffd2
+--- /dev/null
++++ b/advanced-todo/app/(auth)/login/page.tsx
+@@ -0,0 +1,257 @@
++"use client"
++
++import { useEffect, useState } from "react"
++import { createAuthClient } from "better-auth/react"
++import { useRouter } from "next/navigation"
++import { Button } from "@/components/ui/button"
++import { Input } from "@/components/ui/input"
++import { Label } from "@/components/ui/label"
++import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
++import { Icon } from "@/lib/components/icons"
++import { Globe, Apple, Loader2 } from "lucide-react"
++
++const authClient = createAuthClient()
++
++export default function LoginPage() {
++  const router = useRouter()
++  const [formData, setFormData] = useState({
++    email: "",
++    password: "",
++  })
++  const [errors, setErrors] = useState<{ [key: string]: string }>({})
++  const [isLoading, setIsLoading] = useState(false)
++  const [isOAuthLoading, setIsOAuthLoading] = useState<{ [key: string]: boolean }>({})
++  const [providerAvailability, setProviderAvailability] = useState({
++    google: false,
++    apple: false,
++  })
++
++  useEffect(() => {
++    const fetchProviders = async () => {
++      try {
++        const response = await fetch("/api/auth/providers")
++        if (!response.ok) {
++          setProviderAvailability({ google: false, apple: false })
++          return
++        }
++        const data = await response.json()
++        setProviderAvailability({
++          google: Boolean(data.google),
++          apple: Boolean(data.apple),
++        })
++      } catch {
++        setProviderAvailability({ google: false, apple: false })
++      }
++    }
++
++    fetchProviders()
++  }, [])
++
++  const validateForm = () => {
++    const newErrors: { [key: string]: string } = {}
++
++    if (!formData.email) {
++      newErrors['email'] = "Email is required"
++    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
++      newErrors['email'] = "Invalid email address"
++    }
++
++    if (!formData.password) {
++      newErrors['password'] = "Password is required"
++    }
++
++    setErrors(newErrors)
++    return Object.keys(newErrors).length === 0
++  }
++
++  const handleEmailPasswordLogin = async (e: React.FormEvent) => {
++    e.preventDefault()
++    
++    if (!validateForm()) {
++      return
++    }
++
++    setIsLoading(true)
++    setErrors({})
++
++    try {
++      await authClient.signIn.email({
++        email: formData.email,
++        password: formData.password,
++      })
++
++      // Redirect to dashboard after successful login
++      router.push("/dashboard")
++    } catch (error: unknown) {
++      const errorMessage = error instanceof Error && /invalid|credentials|password|email/i.test(error.message)
++        ? "Invalid email or password."
++        : "Login failed. Please try again."
++      setErrors({
++        submit: errorMessage
++      })
++    } finally {
++      setIsLoading(false)
++    }
++  }
++
++  const handleOAuthLogin = async (provider: "google" | "apple") => {
++    setIsOAuthLoading((prev) => ({ ...prev, [provider]: true }))
++    setErrors({})
++
++    try {
++      await authClient.signIn.social({
++        provider,
++        callbackURL: "/dashboard",
++      })
++    } catch {
++      const errorMessage = `${provider} login failed. Please try again.`
++      setErrors({
++        submit: errorMessage
++      })
++    } finally {
++      setIsOAuthLoading((prev) => ({ ...prev, [provider]: false }))
++    }
++  }
++
++  return (
++    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-violet-500 via-purple-500 to-indigo-600 p-4">
++      <div className="max-w-md w-full">
++        <Card className="shadow-2xl">
++          <CardHeader className="space-y-2 text-center">
++            <CardTitle className="text-3xl font-bold text-foreground">Welcome Back</CardTitle>
++            <CardDescription className="text-muted">Sign in to your account</CardDescription>
++          </CardHeader>
++          <CardContent className="space-y-6">
++            {errors['submit'] && (
++              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg" role="alert">
++                <p className="font-medium">{errors['submit']}</p>
++              </div>
++            )}
++
++            {(providerAvailability.google || providerAvailability.apple) && (
++              <div className="space-y-3">
++                {providerAvailability.google && (
++                  <Button
++                    type="button"
++                    variant="outline"
++                    onClick={() => handleOAuthLogin("google")}
++                    disabled={isOAuthLoading['google'] || isLoading}
++                    className="w-full"
++                  >
++                    {isOAuthLoading['google'] ? (
++                      <Icon size="sm" decorative>
++                        <Loader2 className="animate-spin" />
++                      </Icon>
++                    ) : (
++                      <>
++                        <Icon size="sm" color="foreground" decorative>
++                          <Globe />
++                        </Icon>
++                        Sign in with Google
++                      </>
++                    )}
++                  </Button>
++                )}
++
++                {providerAvailability.apple && (
++                  <Button
++                    type="button"
++                    variant="outline"
++                    onClick={() => handleOAuthLogin("apple")}
++                    disabled={isOAuthLoading['apple'] || isLoading}
++                    className="w-full bg-foreground text-background hover:bg-secondary border-foreground"
++                  >
++                    {isOAuthLoading['apple'] ? (
++                      <Icon size="sm" decorative>
++                        <Loader2 className="animate-spin" />
++                      </Icon>
++                    ) : (
++                      <>
++                        <Icon size="sm" color="foreground" decorative>
++                          <Apple />
++                        </Icon>
++                        Sign in with Apple
++                      </>
++                    )}
++                  </Button>
++                )}
++              </div>
++            )}
++
++            <div className="relative">
++              <div className="absolute inset-0 flex items-center">
++                <div className="w-full border-t border-muted"></div>
++              </div>
++              <div className="relative flex justify-center text-xs uppercase">
++                <span className="px-2 bg-surface text-muted">Or continue with email</span>
++              </div>
++            </div>
++
++            <form onSubmit={handleEmailPasswordLogin} className="space-y-4" noValidate>
++              <div className="space-y-2">
++                <Label htmlFor="email">Email Address</Label>
++                <Input
++                  type="email"
++                  id="email"
++                  name="email"
++                  autoComplete="email"
++                  required
++                  aria-invalid={errors['email'] ? "true" : "false"}
++                  aria-describedby={errors['email'] ? "email-error" : undefined}
++                  placeholder="you@example.com"
++                  value={formData.email}
++                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
++                />
++                {errors['email'] && (
++                  <p id="email-error" className="text-sm text-red-600" role="alert">
++                    {errors['email']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="password">Password</Label>
++                <Input
++                  type="password"
++                  id="password"
++                  name="password"
++                  autoComplete="current-password"
++                  required
++                  aria-invalid={errors['password'] ? "true" : "false"}
++                  aria-describedby={errors['password'] ? "password-error" : undefined}
++                  placeholder="••••••••"
++                  value={formData.password}
++                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
++                />
++                {errors['password'] && (
++                  <p id="password-error" className="text-sm text-red-600" role="alert">
++                    {errors['password']}
++                  </p>
++                )}
++              </div>
++
++              <Button
++                type="submit"
++                disabled={isLoading || Object.values(isOAuthLoading).some(Boolean)}
++                className="w-full"
++              >
++                {isLoading ? "Signing in..." : "Sign In"}
++              </Button>
++            </form>
++          </CardContent>
++          <CardFooter className="text-center">
++            <p className="text-muted text-sm">
++              Don&apos;t have an account?{" "}
++              <a
++                href="/register"
++                className="font-medium text-primary hover:text-secondary transition-colors"
++              >
++                Sign up
++              </a>
++            </p>
++          </CardFooter>
++        </Card>
++      </div>
++    </div>
++  )
++}
+diff --git a/advanced-todo/app/(auth)/register/page.tsx b/advanced-todo/app/(auth)/register/page.tsx
+new file mode 100644
+index 0000000..6243e41
+--- /dev/null
++++ b/advanced-todo/app/(auth)/register/page.tsx
+@@ -0,0 +1,236 @@
++"use client"
++
++import { useEffect, useRef, useState } from "react"
++import { createAuthClient } from "better-auth/react"
++import { useRouter } from "next/navigation"
++import { Button } from "@/components/ui/button"
++import { Input } from "@/components/ui/input"
++import { Label } from "@/components/ui/label"
++import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
++
++const authClient = createAuthClient()
++
++export default function RegisterPage() {
++  const router = useRouter()
++  const [formData, setFormData] = useState({
++    name: "",
++    email: "",
++    password: "",
++    confirmPassword: "",
++  })
++  const [errors, setErrors] = useState<{ [key: string]: string }>({})
++  const [isLoading, setIsLoading] = useState(false)
++  const [successMessage, setSuccessMessage] = useState("")
++  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
++
++  useEffect(() => {
++    return () => {
++      if (redirectTimeoutRef.current) {
++        clearTimeout(redirectTimeoutRef.current)
++      }
++    }
++  }, [])
++
++  const validateForm = () => {
++    const newErrors: { [key: string]: string } = {}
++
++    if (!formData.name) {
++      newErrors['name'] = "Name is required"
++    }
++
++    if (!formData.email) {
++      newErrors['email'] = "Email is required"
++    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
++      newErrors['email'] = "Invalid email address"
++    }
++
++    if (!formData.password) {
++      newErrors['password'] = "Password is required"
++    } else if (formData.password.length < 8) {
++      newErrors['password'] = "Password must be at least 8 characters"
++    } else if (!/[A-Z]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one uppercase letter"
++    } else if (!/[a-z]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one lowercase letter"
++    } else if (!/[0-9]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one number"
++    } else if (!/[^A-Za-z0-9]/.test(formData.password)) {
++      newErrors['password'] = "Password must contain at least one special character"
++    }
++
++    if (!formData.confirmPassword) {
++      newErrors['confirmPassword'] = "Please confirm your password"
++    } else if (formData.password !== formData.confirmPassword) {
++      newErrors['confirmPassword'] = "Passwords do not match"
++    }
++
++    setErrors(newErrors)
++    return Object.keys(newErrors).length === 0
++  }
++
++  const handleSubmit = async (e: React.FormEvent) => {
++    e.preventDefault()
++    
++    if (!validateForm()) {
++      return
++    }
++
++    setIsLoading(true)
++    setErrors({})
++    setSuccessMessage("")
++
++    try {
++      await authClient.signUp.email({
++        email: formData.email,
++        password: formData.password,
++        name: formData.name,
++      })
++
++      setSuccessMessage("Registration successful! You can now log in.")
++      if (redirectTimeoutRef.current) {
++        clearTimeout(redirectTimeoutRef.current)
++      }
++      redirectTimeoutRef.current = setTimeout(() => {
++        router.push("/login")
++      }, 2000)
++    } catch (error: unknown) {
++      const errorMessage = error instanceof Error ? error.message : "Registration failed. Please try again."
++      setErrors({
++        submit: errorMessage
++      })
++    } finally {
++      setIsLoading(false)
++    }
++  }
++
++  return (
++    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-violet-500 via-purple-500 to-indigo-600 p-4">
++      <div className="max-w-md w-full">
++        <Card className="shadow-2xl">
++          <CardHeader className="space-y-2 text-center">
++            <CardTitle className="text-3xl font-bold text-foreground">Create Account</CardTitle>
++            <CardDescription className="text-muted">Join AdvancedToDo today</CardDescription>
++          </CardHeader>
++          <CardContent className="space-y-6">
++            {successMessage && (
++              <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg" role="alert">
++                <p className="font-medium">{successMessage}</p>
++              </div>
++            )}
++
++            {errors['submit'] && (
++              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg" role="alert">
++                <p className="font-medium">{errors['submit']}</p>
++              </div>
++            )}
++
++            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
++              <div className="space-y-2">
++                <Label htmlFor="name">Name</Label>
++                <Input
++                  type="text"
++                  id="name"
++                  name="name"
++                  autoComplete="name"
++                  required
++                  aria-invalid={errors['name'] ? "true" : "false"}
++                  aria-describedby={errors['name'] ? "name-error" : undefined}
++                  placeholder="John Doe"
++                  value={formData.name}
++                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
++                />
++                {errors['name'] && (
++                  <p id="name-error" className="text-sm text-red-600" role="alert">
++                    {errors['name']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="email">Email Address</Label>
++                <Input
++                  type="email"
++                  id="email"
++                  name="email"
++                  autoComplete="email"
++                  required
++                  aria-invalid={errors['email'] ? "true" : "false"}
++                  aria-describedby={errors['email'] ? "email-error" : undefined}
++                  placeholder="you@example.com"
++                  value={formData.email}
++                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
++                />
++                {errors['email'] && (
++                  <p id="email-error" className="text-sm text-red-600" role="alert">
++                    {errors['email']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="password">Password</Label>
++                <Input
++                  type="password"
++                  id="password"
++                  name="password"
++                  autoComplete="new-password"
++                  required
++                  aria-invalid={errors['password'] ? "true" : "false"}
++                  aria-describedby={errors['password'] ? "password-error" : undefined}
++                  placeholder="••••••••"
++                  value={formData.password}
++                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
++                />
++                {errors['password'] && (
++                  <p id="password-error" className="text-sm text-red-600" role="alert">
++                    {errors['password']}
++                  </p>
++                )}
++              </div>
++
++              <div className="space-y-2">
++                <Label htmlFor="confirmPassword">Confirm Password</Label>
++                <Input
++                  type="password"
++                  id="confirmPassword"
++                  name="confirmPassword"
++                  autoComplete="new-password"
++                  required
++                  aria-invalid={errors['confirmPassword'] ? "true" : "false"}
++                  aria-describedby={errors['confirmPassword'] ? "confirm-password-error" : undefined}
++                  placeholder="••••••••"
++                  value={formData.confirmPassword}
++                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
++                />
++                {errors['confirmPassword'] && (
++                  <p id="confirm-password-error" className="text-sm text-red-600" role="alert">
++                    {errors['confirmPassword']}
++                  </p>
++                )}
++              </div>
++
++              <Button
++                type="submit"
++                disabled={isLoading}
++                className="w-full"
++              >
++                {isLoading ? "Creating account..." : "Create Account"}
++              </Button>
++            </form>
++          </CardContent>
++          <CardFooter className="text-center">
++            <p className="text-muted text-sm">
++              Already have an account?{" "}
++              <a
++                href="/login"
++                className="font-medium text-primary hover:text-secondary transition-colors"
++              >
++                Sign in
++              </a>
++            </p>
++          </CardFooter>
++        </Card>
++      </div>
++    </div>
++  )
++}
+diff --git a/advanced-todo/app/api/auth/[...all]/route.ts b/advanced-todo/app/api/auth/[...all]/route.ts
+index f7be036..b09add6 100644
+--- a/advanced-todo/app/api/auth/[...all]/route.ts
++++ b/advanced-todo/app/api/auth/[...all]/route.ts
+@@ -1,11 +1,97 @@
+ import { auth } from "@/lib/auth"
+ import { toNextJsHandler } from "better-auth/next-js"
+ import { NextResponse } from "next/server"
++import { db } from "@/lib/db"
++import { securityLogs } from "@/drizzle/schema"
++import { and, eq, gte, sql } from "drizzle-orm"
++
++const RATE_LIMIT_WINDOW_MS = 60_000
++const RATE_LIMIT_MAX_REQUESTS = 10
+ 
+ const handler = toNextJsHandler(auth)
+ 
++function getRequestMetadata(req: Request) {
++  return {
++    ipAddress: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown",
++    userAgent: req.headers.get("user-agent") || null,
++    path: new URL(req.url).pathname,
++  }
++}
++
++async function isRateLimited(req: Request) {
++  const { ipAddress, userAgent, path } = getRequestMetadata(req)
++  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS)
++  const eventType = `auth_request:${path}`
++
++  const [result] = await db
++    .select({
++      count: sql<number>`count(*)`,
++    })
++    .from(securityLogs)
++    .where(
++      and(
++        eq(securityLogs.eventType, eventType),
++        eq(securityLogs.ipAddress, ipAddress),
++        gte(securityLogs.timestamp, windowStart)
++      )
++    )
++
++  const requestCount = Number(result?.count ?? 0)
++  if (requestCount >= RATE_LIMIT_MAX_REQUESTS) {
++    await db.insert(securityLogs).values({
++      eventType: "auth_rate_limited",
++      success: false,
++      ipAddress,
++      userAgent,
++    })
++    return true
++  }
++
++  await db.insert(securityLogs).values({
++    eventType,
++    success: true,
++    ipAddress,
++    userAgent,
++  })
++
++  if (requestCount + 1 >= RATE_LIMIT_MAX_REQUESTS) {
++    return false
++  }
++
++  return false
++}
++
++function shouldLogFailedLoginAttempt(req: Request, response: Response) {
++  const pathname = new URL(req.url).pathname
++  const isEmailLoginPath = pathname.includes("/sign-in/email")
++  const isFailedLoginStatus = [400, 401, 403, 422].includes(response.status)
++  return isEmailLoginPath && isFailedLoginStatus
++}
++
++async function logFailedLoginAttempt(req: Request) {
++  try {
++    const { ipAddress, userAgent } = getRequestMetadata(req)
++
++    await db.insert(securityLogs).values({
++      eventType: "login_attempt",
++      success: false,
++      ipAddress,
++      userAgent,
++    })
++  } catch (error) {
++    console.error("Security logging failed:", error)
++  }
++}
++
+ async function withErrorHandler(handler: (req: Request) => Promise<Response>, req: Request) {
+   try {
++    if (await isRateLimited(req)) {
++      return NextResponse.json(
++        { error: { message: "Too many authentication attempts. Please try again shortly.", code: "RATE_LIMITED" } },
++        { status: 429 }
++      )
++    }
++
+     return await handler(req)
+   } catch (error) {
+     console.error("Auth error:", error)
+@@ -21,5 +107,11 @@ export async function GET(req: Request) {
+ }
+ 
+ export async function POST(req: Request) {
+-  return withErrorHandler(handler.POST, req)
++  const response = await withErrorHandler(handler.POST, req)
++
++  if (shouldLogFailedLoginAttempt(req, response)) {
++    await logFailedLoginAttempt(req)
++  }
++
++  return response
+ }
+diff --git a/advanced-todo/app/api/auth/providers/route.ts b/advanced-todo/app/api/auth/providers/route.ts
+new file mode 100644
+index 0000000..4c5adb0
+--- /dev/null
++++ b/advanced-todo/app/api/auth/providers/route.ts
+@@ -0,0 +1,8 @@
++import { NextResponse } from "next/server"
++
++export async function GET() {
++  return NextResponse.json({
++    google: Boolean(process.env['GOOGLE_CLIENT_ID'] && process.env['GOOGLE_CLIENT_SECRET']),
++    apple: Boolean(process.env['APPLE_CLIENT_ID'] && process.env['APPLE_CLIENT_SECRET']),
++  })
++}
+diff --git a/advanced-todo/lib/auth.ts b/advanced-todo/lib/auth.ts
+index 8232eed..352182b 100644
+--- a/advanced-todo/lib/auth.ts
++++ b/advanced-todo/lib/auth.ts
+@@ -13,19 +13,24 @@ export const auth = betterAuth({
+     },
+   }),
+   emailAndPassword: {
+-    enabled: false, // OAuth only for now
++    enabled: true, // Enable email/password authentication
++    requireEmailVerification: false, // Optional: can be enabled later
+   },
+   socialProviders: {
+     google: {
+-      clientId: process.env.GOOGLE_CLIENT_ID || "",
+-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+-      enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
++      clientId: process.env['GOOGLE_CLIENT_ID'] || "",
++      clientSecret: process.env['GOOGLE_CLIENT_SECRET'] || "",
++      enabled: !!(process.env['GOOGLE_CLIENT_ID'] && process.env['GOOGLE_CLIENT_SECRET']),
+     },
+     apple: {
+-      clientId: process.env.APPLE_CLIENT_ID || "",
+-      clientSecret: process.env.APPLE_CLIENT_SECRET || "",
+-      enabled: !!(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
++      clientId: process.env['APPLE_CLIENT_ID'] || "",
++      clientSecret: process.env['APPLE_CLIENT_SECRET'] || "",
++      enabled: !!(process.env['APPLE_CLIENT_ID'] && process.env['APPLE_CLIENT_SECRET']),
+     },
+   },
+-  secret: process.env.BETTER_AUTH_SECRET,
++  secret: process.env['BETTER_AUTH_SECRET'],
++  session: {
++    expiresIn: 60 * 60 * 24 * 7, // 7 days
++    updateAge: 60 * 60 * 24, // 1 day
++  },
+ })
