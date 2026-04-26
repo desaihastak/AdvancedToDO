@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react"
 import { createAuthClient } from "better-auth/react"
 import { useRouter } from "next/navigation"
+
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 const authClient = createAuthClient()
 
@@ -41,7 +42,7 @@ export default function RegisterPage() {
 
     if (!formData.email) {
       newErrors['email'] = "Email is required"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
       newErrors['email'] = "Invalid email address"
     } else if (formData.email.length > 254) {
       newErrors['email'] = "Email is too long"
@@ -96,8 +97,20 @@ export default function RegisterPage() {
       redirectTimeoutRef.current = setTimeout(() => {
         router.push("/login")
       }, REDIRECT_DELAY_MS)
-    } catch {
-      const errorMessage = "Registration failed. Please try again."
+    } catch (error: unknown) {
+      let errorMessage = "Registration failed. Please try again."
+      
+      // Provide more specific error messages based on the error
+      if (error instanceof Error) {
+        if (error.message.includes('email')) {
+          errorMessage = "Email already exists. Please use a different email or log in."
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again."
+        } else {
+          errorMessage = `Registration failed: ${error.message}`
+        }
+      }
+      
       setErrors({
         submit: errorMessage
       })
@@ -201,6 +214,7 @@ export default function RegisterPage() {
                   name="confirmPassword"
                   autoComplete="new-password"
                   required
+                  maxLength={128}
                   aria-invalid={errors['confirmPassword'] ? "true" : "false"}
                   aria-describedby={errors['confirmPassword'] ? "confirm-password-error" : undefined}
                   placeholder="••••••••"

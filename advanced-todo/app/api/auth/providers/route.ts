@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+
 import { isRateLimited as redisIsRateLimited } from "@/lib/rate-limiter"
 
 const RATE_LIMIT_WINDOW_MS = 60_000
@@ -26,8 +27,19 @@ export async function GET(req: Request) {
   const appleClientId = process.env['APPLE_CLIENT_ID']
   const appleClientSecret = process.env['APPLE_CLIENT_SECRET']
 
+  // Check if credentials are set and not placeholder values
+  const isGoogleConfigured = googleClientId?.trim() && 
+                           googleClientSecret?.trim() &&
+                           !googleClientId.includes('your-google-client-id') &&
+                           !googleClientSecret.includes('your-google-client-secret')
+  
+  const isAppleConfigured = appleClientId?.trim() &&
+                          appleClientSecret?.trim() &&
+                          !appleClientId.includes('your-apple-client-id') &&
+                          !appleClientSecret.includes('your-apple-client-secret')
+
   return NextResponse.json({
-    google: Boolean(googleClientId?.trim() && googleClientSecret?.trim()),
-    apple: Boolean(appleClientId?.trim() && appleClientSecret?.trim()),
+    google: isGoogleConfigured,
+    apple: isAppleConfigured,
   })
 }

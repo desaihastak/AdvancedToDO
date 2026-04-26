@@ -1,6 +1,7 @@
-import { auth } from "@/lib/auth"
-import { toNextJsHandler } from "better-auth/next-js"
 import { NextResponse } from "next/server"
+import { toNextJsHandler } from "better-auth/next-js"
+
+import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { isRateLimited as redisIsRateLimited } from "@/lib/rate-limiter"
 
@@ -15,10 +16,10 @@ function getRequestMetadata(req: Request) {
   if (forwardedFor) {
     const ips = forwardedFor.split(",")
     const firstIp = ips[0]?.trim()
-    // Basic IP validation - check if it looks like an IP address
-    if (firstIp && /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(firstIp)) {
+    // Improved IP validation - supports IPv4 and IPv6
+    if (firstIp && isValidIPv4(firstIp)) {
       ipAddress = firstIp
-    } else if (firstIp && /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/.test(firstIp)) {
+    } else if (firstIp && isValidIPv6(firstIp)) {
       ipAddress = firstIp
     }
   }
@@ -28,6 +29,34 @@ function getRequestMetadata(req: Request) {
     path: new URL(req.url).pathname,
     email: null as string | null,
   }
+}
+
+function isValidIPv4(ip: string): boolean {
+  const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/
+  if (!ipv4Pattern.test(ip)) return false
+  const octets = ip.split('.')
+  return octets.every(octet => {
+    const num = parseInt(octet, 10)
+    return num >= 0 && num <= 255
+  })
+}
+
+function isValidIPv6(ip: string): boolean {
+  // IPv6 validation - supports full, compressed, and mixed formats
+  const ipv6Patterns = [
+    /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/, // Full IPv6
+    /^([0-9a-fA-F]{1,4}:){1,7}:$/, // Compressed with trailing ::
+    /^:(:[0-9a-fA-F]{1,4}){1,7}$/, // Compressed with leading ::
+    /^([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}$/, // Partial compression
+    /^([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}$/, // Multiple compression
+    /^([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}$/, // Multiple compression
+    /^([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}$/, // Multiple compression
+    /^([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}$/, // Multiple compression
+    /^[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})$/, // Multiple compression
+    /^:((:[0-9a-fA-F]{1,4}){1,7}|:)/, // All compressed
+    /^::ffff:(\d{1,3}\.){3}\d{1,3}$/, // IPv4-mapped IPv6
+  ]
+  return ipv6Patterns.some(pattern => pattern.test(ip))
 }
 
 async function isRateLimited(req: Request) {
@@ -69,7 +98,7 @@ async function isRateLimited(req: Request) {
 function shouldLogFailedLoginAttempt(req: Request, response: Response) {
   const pathname = new URL(req.url).pathname
   const isEmailLoginPath = pathname.includes("/sign-in/email")
-  const isOAuthPath = pathname.includes("/sign-in") || pathname.includes("/oauth")
+  const isOAuthPath = pathname.includes("/sign-in/social") || pathname.includes("/oauth")
   const isFailedLoginStatus = [400, 401, 403, 422].includes(response.status)
   return (isEmailLoginPath || isOAuthPath) && isFailedLoginStatus
 }
@@ -79,10 +108,21 @@ async function logFailedLoginAttempt(req: Request) {
   setImmediate(async () => {
     try {
       const { ipAddress, userAgent } = getRequestMetadata(req)
+      const pathname = new URL(req.url).pathname
+      
+      // Determine event type based on the request path
+      let eventType = "login_attempt"
+      if (pathname.includes("/sign-in/email")) {
+        eventType = "email_login_attempt"
+      } else if (pathname.includes("/sign-in/social")) {
+        eventType = "oauth_login_attempt"
+      } else if (pathname.includes("/sign-up/email")) {
+        eventType = "registration_attempt"
+      }
 
       await db.securityLog.create({
         data: {
-          eventType: "login_attempt",
+          eventType,
           success: false,
           ipAddress,
           userAgent,

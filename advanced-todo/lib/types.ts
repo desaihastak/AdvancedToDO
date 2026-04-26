@@ -1,6 +1,6 @@
-// Shared type definitions combining Prisma and BetterAuth types
+import type { Account, SecurityLog, Session, User } from "@prisma/client"
+
 import type { Session as BetterAuthSession, User as BetterAuthUser } from "./auth"
-import type { User, Session, Account, SecurityLog } from "@prisma/client"
 
 // Prisma model types for type-safe database operations
 export type UserRow = User

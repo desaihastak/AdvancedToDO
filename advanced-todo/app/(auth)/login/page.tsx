@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { createAuthClient } from "better-auth/react"
+import { Apple, Globe, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Icon } from "@/lib/components/icons"
-import { Globe, Apple, Loader2 } from "lucide-react"
 
 const authClient = createAuthClient()
 
@@ -53,7 +54,7 @@ export default function LoginPage() {
 
     if (!formData.email) {
       newErrors['email'] = "Email is required"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
       newErrors['email'] = "Invalid email address"
     } else if (formData.email.length > 254) {
       newErrors['email'] = "Email is too long"
@@ -85,8 +86,22 @@ export default function LoginPage() {
 
       // Redirect to dashboard after successful login
       router.push("/dashboard")
-    } catch {
-      const errorMessage = "Login failed. Please try again."
+    } catch (error: unknown) {
+      let errorMessage = "Login failed. Please try again."
+      
+      // Provide more specific error messages based on the error
+      if (error instanceof Error) {
+        if (error.message.includes('credentials') || error.message.includes('password')) {
+          errorMessage = "Invalid email or password. Please check your credentials."
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again."
+        } else if (error.message.includes('rate') || error.message.includes('too many')) {
+          errorMessage = "Too many login attempts. Please wait a moment and try again."
+        } else {
+          errorMessage = `Login failed: ${error.message}`
+        }
+      }
+      
       setErrors({
         submit: errorMessage
       })
@@ -148,15 +163,20 @@ export default function LoginPage() {
                     onClick={() => handleOAuthLogin("google")}
                     disabled={isOAuthLoading['google'] || isLoading || !providerAvailability.google}
                     className="w-full"
+                    aria-busy={isOAuthLoading['google']}
+                    aria-live="polite"
                   >
                     {isOAuthLoading['google'] ? (
-                      <Icon size="sm" decorative>
-                        <Loader2 className="animate-spin" />
-                      </Icon>
+                      <>
+                        <Icon size="sm" decorative>
+                          <Loader2 className="animate-spin" aria-hidden="true" />
+                        </Icon>
+                        <span className="sr-only">Loading Google sign in</span>
+                      </>
                     ) : (
                       <>
                         <Icon size="sm" color="foreground" decorative>
-                          <Globe />
+                          <Globe aria-hidden="true" />
                         </Icon>
                         Sign in with Google
                       </>
@@ -171,15 +191,20 @@ export default function LoginPage() {
                     onClick={() => handleOAuthLogin("apple")}
                     disabled={isOAuthLoading['apple'] || isLoading || !providerAvailability.apple}
                     className="w-full bg-foreground text-background hover:bg-secondary border-foreground"
+                    aria-busy={isOAuthLoading['apple']}
+                    aria-live="polite"
                   >
                     {isOAuthLoading['apple'] ? (
-                      <Icon size="sm" decorative>
-                        <Loader2 className="animate-spin" />
-                      </Icon>
+                      <>
+                        <Icon size="sm" decorative>
+                          <Loader2 className="animate-spin" aria-hidden="true" />
+                        </Icon>
+                        <span className="sr-only">Loading Apple sign in</span>
+                      </>
                     ) : (
                       <>
                         <Icon size="sm" color="foreground" decorative>
-                          <Apple />
+                          <Apple aria-hidden="true" />
                         </Icon>
                         Sign in with Apple
                       </>
@@ -229,6 +254,7 @@ export default function LoginPage() {
                   name="password"
                   autoComplete="current-password"
                   required
+                  maxLength={128}
                   aria-invalid={errors['password'] ? "true" : "false"}
                   aria-describedby={errors['password'] ? "password-error" : undefined}
                   placeholder="••••••••"
