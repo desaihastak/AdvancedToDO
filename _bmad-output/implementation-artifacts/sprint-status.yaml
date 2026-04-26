@@ -1,0 +1,103 @@
+# generated: 2026-04-26T21:06:00Z
+# last_updated: 2026-04-26T21:06:00Z
+# project: AdvancedToDo
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-04-26T21:06:00Z
+last_updated: 2026-04-26T21:10:00Z
+project: AdvancedToDo
+project_key: NOKEY
+tracking_system: file-system
+story_location: {project-root}/_bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: in-progress
+  1-1-initialize-nextjs-project-with-authentication-foundation: ready-for-dev
+  1-2-user-registration-and-login: backlog
+  1-3-account-settings-management: backlog
+  epic-1-retrospective: optional
+  
+  epic-2: backlog
+  2-1-task-model-and-basic-crud-api: backlog
+  2-2-text-input-task-creation: backlog
+  2-3-voice-input-with-web-speech-api: backlog
+  2-4-screenshot-input-with-drop-zone: backlog
+  2-5-ai-task-extraction-from-multi-task-input: backlog
+  2-6-ai-task-categorization: backlog
+  2-7-ai-priority-assignment: backlog
+  2-8-user-override-for-ai-assignments: backlog
+  epic-2-retrospective: optional
+  
+  epic-3: backlog
+  3-1-task-list-view-and-filtering: backlog
+  3-2-task-update-and-edit: backlog
+  3-3-task-completion: backlog
+  3-4-task-deletion: backlog
+  3-5-task-organization-by-categories: backlog
+  3-6-task-organization-by-priorities: backlog
+  epic-3-retrospective: optional
+  
+  epic-4: backlog
+  4-1-server-sent-events-for-real-time-sync: backlog
+  4-2-optimistic-ui-updates-with-rollback: backlog
+  4-3-offline-queue-management: backlog
+  4-4-conflict-resolution-for-simultaneous-edits: backlog
+  4-5-sync-status-indicator: backlog
+  epic-4-retrospective: optional
+  
+  epic-5: backlog
+  5-1-cosmic-violet-design-system-implementation: backlog
+  5-2-shadcn-ui-integration-and-customization: backlog
+  5-3-framer-motion-animated-transitions: backlog
+  5-4-visual-celebration-animations: backlog
+  5-5-voice-input-interface-with-waveform: backlog
+  5-6-screenshot-drop-zone-design: backlog
+  5-7-keyboard-navigation-support: backlog
+  5-8-screen-reader-support: backlog
+  5-9-aria-labels-and-roles: backlog
+  5-10-focus-management: backlog
+  5-11-color-contrast-and-visual-accessibility: backlog
+  epic-5-retrospective: optional
+  
+  epic-6: backlog
+  6-1-data-export-functionality: backlog
+  6-2-account-deletion-request: backlog
+  6-3-consent-management-interface: backlog
+  6-4-audit-logging-system: backlog
+  6-5-api-rate-limiting: backlog
+  6-6-content-moderation-for-public-sharing: backlog
+  6-7-gdpr-compliance-documentation: backlog
+  6-8-data-retention-and-cleanup: backlog
+  6-9-security-incident-response: backlog
+  epic-6-retrospective: optional
