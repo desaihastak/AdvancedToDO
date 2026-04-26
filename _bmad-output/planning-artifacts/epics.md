@@ -100,9 +100,9 @@ NFR33: Database replication ensures data durability across availability zones
 ### Additional Requirements
 
 - Starter Template: Use official create-next-app with TypeScript, Tailwind CSS, ESLint, and App Router (initialization command: pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*")
-- Database: PostgreSQL with Prisma ORM for data access and schema management
+- Database: PostgreSQL with Drizzle ORM for data access and schema management
 - Real-time sync: Server-Sent Events (SSE) or WebSocket for sub-500ms sync latency with optimistic UI updates
-- Authentication: NextAuth.js with OAuth 2.0/JWT for secure user authentication
+- Authentication: BetterAuth with OAuth 2.0/JWT for secure user authentication
 - AI Processing: NLP pipeline for task categorization and priority extraction with confidence scoring and learning from user corrections
 - Image Processing: Service for screenshot input processing with OCR/text extraction
 - Animation: Framer Motion for 60fps GPU-accelerated animations with performance budget monitoring
@@ -236,11 +236,11 @@ So that the application has a solid foundation for user authentication and accou
 
 **Given** a fresh development environment
 **When** I run `pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*"`
-**Then** the Next.js project is created with TypeScript, Tailwind CSS, ESLint, and App Router
+**And** the Next.js project is created with TypeScript, Tailwind CSS, ESLint, and App Router
 **And** the project structure follows the architecture document specifications
-**And** I install NextAuth.js v5 with required dependencies
+**And** I install BetterAuth with required dependencies
 **And** I configure Drizzle ORM with PostgreSQL connection to Supabase
-**And** I create the User model in Drizzle schema with fields: id, email, name, createdAt, updatedAt
+**And** I create the User model in Drizzle schema with fields: id, email, name, emailVerified, createdAt, updatedAt
 **And** I set up environment variables for database URL and authentication secrets
 **And** I configure BetterAuth with OAuth providers (Google, Apple)
 **And** I create the authentication API route at `/app/api/auth/[...all]/route.ts`

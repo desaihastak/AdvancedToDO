@@ -48,6 +48,12 @@ pnpm drizzle-kit generate
 pnpm drizzle-kit migrate
 ```
 
+3. Rollback migration (if needed):
+```bash
+# Manually revert the last migration SQL file in drizzle/migrations/
+# Then re-generate and apply if necessary
+```
+
 ### Running the Development Server
 
 ```bash
@@ -81,11 +87,11 @@ advanced-todo/
 
 ## Technology Stack
 
-- **Framework**: Next.js 15+ with App Router
+- **Framework**: Next.js 16+ with App Router
 - **Language**: TypeScript 5+
 - **Styling**: Tailwind CSS
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: NextAuth.js v5 (Auth.js)
+- **Authentication**: BetterAuth
 - **OAuth Providers**: Google, Apple
 
 ## Authentication

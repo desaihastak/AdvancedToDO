@@ -136,7 +136,7 @@ Full-stack web application with real-time features and AI processing, based on p
 
 1. **Official create-next-app** - The standard Next.js starter maintained by the Next.js team. Provides TypeScript, Tailwind CSS, ESLint, and App Router out of the box. Maximum flexibility for adding custom requirements like real-time sync and AI processing.
 
-2. **T3 Stack (create-t3-app)** - Opinionated full-stack starter with TypeScript, Tailwind, Prisma, tRPC, and NextAuth. Excellent for typesafe full-stack apps but may be over-opinionated for your specific AI processing and real-time sync needs.
+2. **T3 Stack (create-t3-app)** - Opinionated full-stack starter with TypeScript, Tailwind, Drizzle, tRPC, and BetterAuth. Excellent for typesafe full-stack apps but may be over-opinionated for your specific AI processing and real-time sync needs.
 
 3. **shadcn/ui Community Templates** - Pre-built templates with shadcn/ui already integrated. Good starting point but may have architectural decisions that don't align with your unique requirements.
 
@@ -237,7 +237,7 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 
 **Migration Approach:**
 - **Decision:** Drizzle Kit with version-controlled schema files
-- **Rationale:** Type-safe migrations, automatic schema sync, rollback capability, simpler configuration than Prisma
+- **Rationale:** Type-safe migrations, automatic schema sync, rollback capability, simpler configuration
 - **Affects:** Database deployment workflow, schema changes
 
 **Caching Strategy:**
@@ -573,7 +573,7 @@ advanced-todo/
 │   │           └── page.tsx
 │   ├── api/
 │   │   ├── auth/
-│   │   │   └── [...nextauth]/
+│   │   │   └── [...all]/
 │   │   │       └── route.ts
 │   │   ├── tasks/
 │   │   │   ├── route.ts
@@ -712,7 +712,7 @@ Input Methods (FR8-FR12):
 AI Processing (FR13-FR18):
 - Services: lib/services/ai.ts, lib/services/nlp.ts
 - API Routes: app/api/ai/categorize/, app/api/ai/transcribe/
-- Database: prisma/schema.prisma (Task model with category, priority fields)
+- Database: drizzle/schema.ts (Task model with category, priority fields)
 - Tests: lib/services/ai.test.ts
 
 Synchronization (FR19-FR23):
@@ -755,14 +755,14 @@ Authentication System:
 - Components: components/auth/
 - Services: lib/auth.ts, lib/services/auth.ts
 - Middleware: app/middleware.ts
-- API Routes: app/api/auth/[...nextauth]/
+- API Routes: app/api/auth/[...all]/
 - Tests: components/auth/*.test.tsx, lib/auth.test.ts
 
 Real-Time Sync:
 - Components: components/sync/
 - Services: lib/services/sync.ts
 - API Routes: app/api/sync/
-- Database: prisma/schema.prisma (SyncQueue model)
+- Database: drizzle/schema.ts (SyncQueue model)
 - Tests: lib/services/sync.test.ts
 
 Error Handling:
@@ -777,10 +777,10 @@ Error Handling:
 - Server Components → API Routes: Server Actions for mutations
 - Client Components → API Routes: fetch() calls via lib/hooks/
 - Components → Services: React hooks (useTasks, useSync, useAuth)
-- Services → Database: Prisma client via lib/db.ts
+- Services → Database: Drizzle client via lib/db.ts
 
 **External Integrations:**
-- NextAuth.js: OAuth providers (Google, Apple)
+- BetterAuth: OAuth providers (Google, Apple)
 - Supabase: PostgreSQL hosting and real-time subscriptions
 - OpenAI API: AI categorization (Phase 2)
 - Web Speech API: Browser-native voice recognition
@@ -789,7 +789,7 @@ Error Handling:
 **Data Flow:**
 1. User input (voice/screenshot) → Component
 2. Component → AI service (via API route)
-3. AI service → Database (via Prisma)
+3. AI service → Database (via Drizzle)
 4. Database → Sync service (via CDC)
 5. Sync service → SSE endpoint
 6. SSE endpoint → Client components (via EventSource)
@@ -801,7 +801,7 @@ Error Handling:
 - Root level: package.json, next.config.js, tailwind.config.ts, tsconfig.json
 - Environment: .env.local (local), .env.production (Vercel)
 - CI/CD: .github/workflows/
-- Database: prisma/schema.prisma
+- Database: drizzle/schema.ts
 
 **Source Organization:**
 - App Router: app/ directory with route-based organization
@@ -831,7 +831,7 @@ Error Handling:
 - Next.js dev server: `pnpm dev` runs on localhost:3000
 - Hot Module Replacement: Automatic for all file changes
 - TypeScript checking: Built into dev server
-- Prisma Studio: `pnpm prisma studio` for database inspection
+- Drizzle Studio: `pnpm drizzle-kit studio` for database inspection
 
 **Build Process Structure:**
 - Next.js build: `pnpm build` creates optimized production build
@@ -842,7 +842,7 @@ Error Handling:
 **Deployment Structure:**
 - Vercel: Automatic deployment from GitHub main branch
 - Environment variables: Configured in Vercel dashboard
-- Database migrations: Automatic via Prisma migrate deploy
+- Database migrations: Automatic via Drizzle migrate
 - Preview environments: Automatic for each PR
 
 ## Architecture Validation Results
@@ -850,10 +850,10 @@ Error Handling:
 ### Coherence Validation ✅
 
 **Decision Compatibility:**
-All technology choices work together without conflicts. Next.js 15+, PostgreSQL 16, Prisma 5+, NextAuth.js v5, and Framer Motion are fully compatible. TypeScript strict mode across all components ensures type safety. SSE for real-time sync integrates seamlessly with Next.js API routes. No contradictory decisions found.
+All technology choices work together without conflicts. Next.js 16+, PostgreSQL 16, Drizzle ORM, BetterAuth, and Framer Motion are fully compatible. TypeScript strict mode across all components ensures type safety. SSE for real-time sync integrates seamlessly with Next.js API routes. No contradictory decisions found.
 
 **Pattern Consistency:**
-Implementation patterns fully support architectural decisions. Naming conventions (snake_case for database, camelCase for code, PascalCase for components) align with TypeScript/Prisma best practices. Structure patterns (co-located tests, feature-based organization) enable the chosen technology stack. Communication patterns (SSE for server-to-client, REST for API calls) are coherent with the architecture.
+Implementation patterns fully support architectural decisions. Naming conventions (snake_case for database, camelCase for code, PascalCase for components) align with TypeScript/Drizzle best practices. Structure patterns (co-located tests, feature-based organization) enable the chosen technology stack. Communication patterns (SSE for server-to-client, REST for API calls) are coherent with the architecture.
 
 **Structure Alignment:**
 Project structure supports all architectural decisions. App Router structure enables Next.js server components. Component organization (feature-based with shared UI) supports the UI architecture. Service layer (lib/services/) provides clear business logic boundaries. Integration points (API routes, SSE endpoint) are properly structured.
@@ -876,14 +876,14 @@ All 47 functional requirements have architectural support. Each FR category maps
 
 **Non-Functional Requirements Coverage:**
 - Performance: 60fps animations (Framer Motion + GPU acceleration), <500ms sync (SSE + PostgreSQL CDC), <200KB bundle (Next.js code splitting)
-- Security: Encryption at rest/in transit (Supabase + TLS 1.3), JWT tokens (NextAuth.js), GDPR compliance (lib/services/compliance.ts)
+- Security: Encryption at rest/in transit (Supabase + TLS 1.3), JWT tokens (BetterAuth), GDPR compliance (lib/services/compliance.ts)
 - Scalability: Vercel auto-scaling (10,000+ users), Supabase auto-scaling, CDN (Vercel Edge Network)
 - Accessibility: WCAG 2.1 AA (shadcn-ui + ARIA), keyboard navigation, screen reader support
 
 ### Implementation Readiness Validation ✅
 
 **Decision Completeness:**
-All critical decisions documented with versions (PostgreSQL 16, Next.js 15+, Prisma 5+, NextAuth.js v5). Implementation patterns are comprehensive (25 conflict points addressed). Consistency rules are clear and enforceable (ESLint, TypeScript strict mode). Examples provided for all major patterns.
+All critical decisions documented with versions (PostgreSQL 16, Next.js 16+, Drizzle ORM, BetterAuth). Implementation patterns are comprehensive (25 conflict points addressed). Consistency rules are clear and enforceable (ESLint, TypeScript strict mode). Examples provided for all major patterns.
 
 **Structure Completeness:**
 Project structure is complete and specific (all files and directories defined). Integration points clearly specified (API boundaries, component boundaries, service boundaries). Component boundaries well-defined (feature-based organization, shared UI components).

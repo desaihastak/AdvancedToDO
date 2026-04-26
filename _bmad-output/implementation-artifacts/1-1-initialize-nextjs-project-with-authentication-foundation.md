@@ -1,6 +1,6 @@
 # Story 1.1: Initialize Next.js Project with Authentication Foundation
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -14,12 +14,12 @@ so that the application has a solid foundation for user authentication and accou
 
 1. Given a fresh development environment, when I run `pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*"`, then the Next.js project is created with TypeScript, Tailwind CSS, ESLint, and App Router
 2. The project structure follows the architecture document specifications
-3. NextAuth.js v5 with required dependencies is installed
-4. Prisma ORM is configured with PostgreSQL connection to Supabase
-5. User model is created in Prisma schema with fields: id, email, name, createdAt, updatedAt
+3. BetterAuth with required dependencies is installed
+4. Drizzle ORM is configured with PostgreSQL connection to Supabase
+5. User model is created in Drizzle schema with fields: id, email, name, emailVerified, createdAt, updatedAt
 6. Environment variables are set up for database URL and authentication secrets
-7. NextAuth.js is configured with OAuth providers (Google, Apple)
-8. Authentication API route is created at `/app/api/auth/[...nextauth]/route.ts`
+7. BetterAuth is configured with OAuth providers (Google, Apple)
+8. Authentication API route is created at `/app/api/auth/[...all]/route.ts`
 9. The application starts successfully without errors
 10. All configurations are documented in the project README
 
@@ -29,16 +29,16 @@ so that the application has a solid foundation for user authentication and accou
   - [x] Run `pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*"`
   - [x] Verify project structure matches architecture specifications
   - [x] Test that the development server starts with `pnpm dev`
-- [x] Install and configure NextAuth.js v5 (AC: 3, 7, 8)
-  - [x] Install NextAuth.js v5 and dependencies: `pnpm install next-auth@beta`
+- [x] Install and configure BetterAuth (AC: 3, 7, 8)
+  - [x] Install BetterAuth and dependencies: `pnpm install better-auth`
   - [x] Create auth configuration file at `lib/auth.ts`
   - [x] Configure OAuth providers (Google, Apple)
-  - [x] Create authentication API route at `/app/api/auth/[...nextauth]/route.ts`
+  - [x] Create authentication API route at `/app/api/auth/[...all]/route.ts`
 - [x] Set up Drizzle ORM with Supabase PostgreSQL (AC: 4, 5)
   - [x] Install Drizzle ORM and PostgreSQL driver: `pnpm install drizzle-orm postgres` and `pnpm install -D drizzle-kit`
   - [x] Create Drizzle schema with User model in drizzle/schema.ts
   - [x] Configure DATABASE_URL in .env.local pointing to Supabase PostgreSQL
-  - [x] Create User model with id, email, name, createdAt, updatedAt
+  - [x] Create User model with id, email, name, emailVerified, createdAt, updatedAt
   - [x] Generate and apply migration: `pnpm drizzle-kit generate` and `pnpm drizzle-kit migrate`
 - [x] Configure environment variables (AC: 6)
   - [x] Create .env.local with DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL
@@ -49,6 +49,23 @@ so that the application has a solid foundation for user authentication and accou
   - [x] Document environment variable setup
   - [x] Document authentication configuration
   - [x] Document database setup and migration commands
+
+### Review Findings
+
+- [x] [Review][Decision] Switched from Prisma to Drizzle ORM without spec update — Spec AC4 requires "Prisma ORM configured with PostgreSQL connection to Supabase" but implementation uses Drizzle ORM (package.json lines 13, 24, drizzle/schema.ts). This is a significant architectural deviation that requires spec approval. **APPROVED - Spec will be updated to reflect Drizzle ORM.**
+- [x] [Review][Decision] Switched from NextAuth.js to BetterAuth without spec update — Spec AC3 requires "NextAuth.js v5 with required dependencies installed" but implementation uses BetterAuth (package.json line 12, lib/auth.ts line 1). README also incorrectly states "NextAuth.js v5" on line 88. This is a significant architectural deviation. **APPROVED - Spec will be updated to reflect BetterAuth.**
+- [x] [Review][Decision] Auth API route path differs from specification — Spec AC8 requires `/app/api/auth/[...nextauth]/route.ts` but implementation uses `/app/api/auth/[...all]/route.ts`. BetterAuth uses [...all] convention, but spec explicitly requires [...nextauth]. **APPROVED - Spec will be updated to reflect [...all] route path.**
+- [x] [Review][Decision] User schema includes additional field not in spec — Spec AC5 requires User model with fields: id, email, name, createdAt, updatedAt. Implementation includes additional `emailVerified` field (drizzle/schema.ts line 9). This may be intentional for BetterAuth but deviates from spec. **APPROVED - Spec will be updated to include emailVerified field.**
+- [x] [Review][Patch] README documents NextAuth.js but code uses BetterAuth [README.md:88] — **FIXED** - Updated README to document BetterAuth and Next.js 16+
+- [x] [Review][Patch] No runtime validation for DATABASE_URL environment variable [lib/db.ts:4, drizzle.config.ts:8] — **FIXED** - Added validation checks in both files
+- [x] [Review][Patch] OAuth provider credentials allow empty strings [lib/auth.ts:20-21, 25-26] — **FIXED** - Changed enabled flag to check for both clientId and clientSecret presence
+- [x] [Review][Patch] Inconsistent auth secret environment variable naming [lib/auth.ts:30, .env.example] — **FIXED** - Removed NEXTAUTH_SECRET fallback, now only uses BETTER_AUTH_SECRET
+- [x] [Review][Patch] No error handling for database connection failures [lib/db.ts:6] — **FIXED** - Added validation check before creating postgres client
+- [x] [Review][Patch] No migration rollback instructions in README [README.md] — **FIXED** - Added rollback instructions to README
+- [x] [Review][Patch] Technology stack version mismatch [README.md:84, package.json] — **FIXED** - Updated README to reflect Next.js 16+
+- [x] [Review][Patch] Auth route handler lacks error boundary [app/api/auth/[...all]/route.ts:4] — **FIXED** - Added error handling wrapper with try-catch
+- [x] [Review][Defer] No database connection pooling configured [lib/db.ts:6] — deferred, pre-existing postgres library limitation, not specific to this change
+- [x] [Review][Defer] ESLint dependency present but no configuration file visible [package.json] — deferred, may exist in files not reviewed, or using Next.js default config
 
 ## Dev Notes
 
@@ -61,21 +78,21 @@ so that the application has a solid foundation for user authentication and accou
 
 **Database:**
 - PostgreSQL 16+ (hosted on Supabase)
-- Prisma 5+ ORM for type-safe database access
-- User model: id (cuid), email, name, createdAt, updatedAt
+- Drizzle ORM for type-safe database access
+- User model: id (text), email, name, emailVerified, createdAt, updatedAt
 
 **Authentication:**
-- NextAuth.js v5 (Auth.js beta)
+- BetterAuth
 - OAuth providers: Google, Apple
 - JWT session management
-- Bring Your Own Database (BYOD) pattern with Prisma
+- Bring Your Own Database (BYOD) pattern with Drizzle
 
 **Project Structure:**
 - App Router architecture (app/ directory)
 - No src directory (--no-src-dir flag)
 - Import alias @/* for clean imports
 - API routes in app/api/
-- Prisma schema in prisma/
+- Drizzle schema in drizzle/
 
 ### Architecture Compliance
 
