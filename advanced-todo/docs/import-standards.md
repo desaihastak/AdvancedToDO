@@ -58,6 +58,8 @@ import { Label } from "@/components/ui/label"
 - `app/api/auth/providers/route.ts`
 - `app/(auth)/register/page.tsx`
 - `app/(auth)/login/page.tsx`
+- `app/(dashboard)/page.tsx`
+- `app/page.tsx`
 - `middleware.ts`
 - `lib/auth.ts`
 - `lib/types.ts`

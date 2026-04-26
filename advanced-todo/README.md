@@ -93,7 +93,7 @@ advanced-todo/
 - **Framework**: Next.js 16+ with App Router
 - **Language**: TypeScript 5+
 - **Styling**: Tailwind CSS
-- **UI Components**: shadcn-ui (customized with Cosmic Violet theme)
+- **UI Components**: shadcn/ui (Radix UI primitives with Cosmic Violet theme)
 - **Icons**: lucide-react with custom Icon wrapper component
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: BetterAuth

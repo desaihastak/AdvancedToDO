@@ -1,13 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* REMOVED: @import "shadcn/tailwind.css" - Package-internal import is fragile and breaks on updates.
- * Base shadcn styles are defined inline below for stability.
- */
-
 @custom-variant dark (&:is(.dark *));
 
-/* Shadcn base styles - copied locally for stability */
+/* Base UI styles - custom implementation for stability */
 @layer base {
   :root {
     --radius: 0.625rem;
