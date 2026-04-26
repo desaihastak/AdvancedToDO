@@ -196,8 +196,8 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 ### Decision Priority Analysis
 
 **Critical Decisions (Block Implementation):**
-- Database: PostgreSQL with Prisma ORM
-- Authentication: NextAuth.js v5 (Auth.js)
+- Database: PostgreSQL with Drizzle ORM
+- Authentication: BetterAuth
 - Real-Time Sync: Server-Sent Events (SSE)
 - State Management: React Context + Server Components
 - AI Processing: Hybrid (rule-based MVP + OpenAI GPT-4 Phase 2)
@@ -218,17 +218,17 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 ### Data Architecture
 
 **Database Choice: PostgreSQL 16+**
-- **Rationale:** ACID compliance for task synchronization integrity, complex query support for filtering/sorting, excellent TypeScript support via Prisma, proven scalability to 10,000+ users, strong consistency guarantees
+- **Rationale:** ACID compliance for task synchronization integrity, complex query support for filtering/sorting, excellent TypeScript support via Drizzle, proven scalability to 10,000+ users, strong consistency guarantees
 - **Version:** PostgreSQL 16 (latest stable)
-- **ORM:** Prisma 5+ for type-safe database access
+- **ORM:** Drizzle ORM for type-safe database access
 - **Real-time Sync:** PostgreSQL logical replication with Change Data Capture (CDC)
 - **Affects:** Task CRUD operations, sync service, conflict resolution
 - **Provided by Starter:** No
 
 **Data Modeling Approach:**
 - **Decision:** Relational schema with normalized tables (users, tasks, categories, priorities, sync_queue)
-- **Rationale:** Complex queries require relational structure, data integrity critical for sync, Prisma provides excellent TypeScript integration
-- **Affects:** Database schema design, Prisma schema configuration
+- **Rationale:** Complex queries require relational structure, data integrity critical for sync, Drizzle provides excellent TypeScript integration
+- **Affects:** Database schema design, Drizzle schema configuration
 
 **Data Validation Strategy:**
 - **Decision:** Zod schemas for runtime validation with TypeScript type inference
@@ -236,8 +236,8 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 - **Affects:** API route validation, form validation, type definitions
 
 **Migration Approach:**
-- **Decision:** Prisma Migrate with version-controlled schema files
-- **Rationale:** Type-safe migrations, automatic schema sync, rollback capability
+- **Decision:** Drizzle Kit with version-controlled schema files
+- **Rationale:** Type-safe migrations, automatic schema sync, rollback capability, simpler configuration than Prisma
 - **Affects:** Database deployment workflow, schema changes
 
 **Caching Strategy:**
@@ -247,11 +247,11 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 
 ### Authentication & Security
 
-**Authentication Method: NextAuth.js v5 (Auth.js)**
-- **Rationale:** OAuth 2.0 support (Google, Apple, etc.), JWT token management, excellent Next.js App Router integration, session management built-in, Bring Your Own Database support
-- **Version:** NextAuth.js v5 (latest)
+**Authentication Method: BetterAuth**
+- **Rationale:** OAuth 2.0 support (Google, Apple, etc.), built-in audit logging, 2FA, RBAC, excellent TypeScript support, Drizzle ORM integration, framework-agnostic for future mobile support
+- **Version:** BetterAuth (latest)
 - **Providers:** OAuth (Google, Apple) + Email/password option
-- **Affects:** User account management, API security, session handling
+- **Affects:** User account management, API security, session handling, GDPR compliance
 - **Provided by Starter:** No
 
 **Authorization Patterns:**
@@ -367,8 +367,8 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 **Implementation Sequence:**
 1. Initialize Next.js project with create-next-app (first implementation story)
 2. Set up PostgreSQL database with Supabase
-3. Configure Prisma ORM and create initial schema
-4. Implement NextAuth.js authentication
+3. Configure Drizzle ORM and create initial schema
+4. Implement BetterAuth authentication
 5. Set up Server-Sent Events for real-time sync
 6. Implement basic task CRUD operations
 7. Add shadcn-ui components
@@ -423,7 +423,7 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 - Types: types/ directory for shared TypeScript types
 
 **File Structure Patterns:**
-- Config files: Root level (next.config.js, tailwind.config.ts, prisma/schema.prisma)
+- Config files: Root level (next.config.js, tailwind.config.ts, drizzle/schema.ts, drizzle.config.ts)
 - Static assets: public/ directory for static files
 - Documentation: docs/ directory for project documentation
 - Environment: .env.local for local, .env.production for production
@@ -492,15 +492,14 @@ pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app
 
 **Good Examples:**
 ```
-// Database table (Prisma schema)
-model Task {
-  id          String   @id @default(cuid())
-  title       String
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  isCompleted Boolean  @default(false)
-}
+// Database table (Drizzle schema)
+export const tasks = pgTable("tasks", {
+  id: text("id").primaryKey().$defaultFn(() => sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  userId: text("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  isCompleted: boolean("is_completed").notNull().default(false),
+})
 
 // API route
 app/api/tasks/route.ts
@@ -647,11 +646,11 @@ advanced-todo/
 │   ├── user.ts
 │   ├── sync.ts
 │   └── ai.ts
-├── prisma/
-│   ├── schema.prisma
-│   ├── seed.ts
+├── drizzle/
+│   ├── schema.ts
+│   ├── config.ts
 │   └── migrations/
-│       ├── 20260426_init/
+│       ├── 0000_init/
 │       │   └── migration.sql
 │       └── ...
 ├── public/
@@ -671,8 +670,8 @@ advanced-todo/
 **API Boundaries:**
 - External API endpoints: `/api/tasks`, `/api/users`, `/api/sync`, `/api/ai/*`
 - Internal service boundaries: lib/services/ contains all business logic
-- Authentication boundary: NextAuth.js at `/api/auth/[...nextauth]`
-- Data access layer boundary: Prisma ORM in lib/db.ts
+- Authentication boundary: BetterAuth at `/api/auth/[...all]`
+- Data access layer boundary: Drizzle ORM in lib/db.ts
 
 **Component Boundaries:**
 - Frontend component communication: Props for parent-child, React Context for cross-component
@@ -687,8 +686,8 @@ advanced-todo/
 - Compliance service: lib/services/compliance.ts handles GDPR requirements
 
 **Data Boundaries:**
-- Database schema boundaries: Prisma schema.prisma defines all models
-- Data access patterns: All database access goes through Prisma client
+- Database schema boundaries: drizzle/schema.ts defines all models
+- Data access patterns: All database access goes through Drizzle client
 - Caching boundaries: React Query for client cache, PostgreSQL query cache for server
 - External data integration: Supabase for PostgreSQL, OpenAI API for AI processing
 
@@ -700,14 +699,14 @@ Task Management (FR1-FR7):
 - Components: components/tasks/
 - Services: lib/services/tasks.ts
 - API Routes: app/api/tasks/
-- Database: prisma/schema.prisma (Task model)
+- Database: drizzle/schema.ts (Task model)
 - Tests: components/tasks/*.test.tsx
 
 Input Methods (FR8-FR12):
 - Components: components/voice-input/, components/screenshot-input/
 - Services: lib/services/ai.ts, lib/services/nlp.ts
 - API Routes: app/api/ai/
-- Database: prisma/schema.prisma (Task model with input_source field)
+- Database: drizzle/schema.ts (Task model with input_source field)
 - Tests: components/voice-input/*.test.tsx
 
 AI Processing (FR13-FR18):
@@ -720,14 +719,14 @@ Synchronization (FR19-FR23):
 - Components: components/sync/
 - Services: lib/services/sync.ts
 - API Routes: app/api/sync/
-- Database: prisma/schema.prisma (SyncQueue model)
+- Database: drizzle/schema.ts (SyncQueue model)
 - Tests: lib/services/sync.test.ts
 
 User Management (FR24-FR30):
 - Components: components/auth/
 - Services: lib/services/auth.ts, lib/auth.ts
-- API Routes: app/api/auth/, app/api/users/
-- Database: prisma/schema.prisma (User model)
+- API Routes: app/api/auth/[...all]/, app/api/users/
+- Database: drizzle/schema.ts (User, Session, Account models)
 - Tests: components/auth/*.test.tsx
 
 Visual Experience (FR31-FR35):
@@ -747,7 +746,7 @@ Accessibility (FR36-FR41):
 Data Privacy & Compliance (FR42-FR47):
 - Services: lib/services/compliance.ts
 - API Routes: app/api/users/ (for deletion/export)
-- Database: prisma/schema.prisma (User model with consent fields)
+- Database: drizzle/schema.ts (User model with consent fields)
 - Tests: lib/services/compliance.test.ts
 
 **Cross-Cutting Concerns:**

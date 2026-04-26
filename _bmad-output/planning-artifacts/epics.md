@@ -239,11 +239,11 @@ So that the application has a solid foundation for user authentication and accou
 **Then** the Next.js project is created with TypeScript, Tailwind CSS, ESLint, and App Router
 **And** the project structure follows the architecture document specifications
 **And** I install NextAuth.js v5 with required dependencies
-**And** I configure Prisma ORM with PostgreSQL connection to Supabase
-**And** I create the User model in Prisma schema with fields: id, email, name, createdAt, updatedAt
+**And** I configure Drizzle ORM with PostgreSQL connection to Supabase
+**And** I create the User model in Drizzle schema with fields: id, email, name, createdAt, updatedAt
 **And** I set up environment variables for database URL and authentication secrets
-**And** I configure NextAuth.js with OAuth providers (Google, Apple)
-**And** I create the authentication API route at `/app/api/auth/[...nextauth]/route.ts`
+**And** I configure BetterAuth with OAuth providers (Google, Apple)
+**And** I create the authentication API route at `/app/api/auth/[...all]/route.ts`
 **And** the application starts successfully without errors
 **And** all configurations are documented in the project README
 
@@ -316,7 +316,7 @@ So that the application can store and retrieve task data.
 **Acceptance Criteria:**
 
 **Given** the authentication infrastructure is complete
-**When** I add the Task model to Prisma schema
+**When** I add the Task model to Drizzle schema
 **Then** the Task model includes fields: id, title, description, userId, category, priority, isCompleted, createdAt, updatedAt
 **And** the Task model has a relation to User model
 **And** I create indexes on userId and isCompleted for query performance
@@ -1259,7 +1259,7 @@ So that all critical actions are tracked for compliance and security monitoring.
 **Acceptance Criteria:**
 
 **Given** the authentication system is complete
-**When** I create the AuditLog model in Prisma schema
+**When** I create the AuditLog model in Drizzle schema
 **Then** the model includes fields: id, userId, action, details, ipAddress, timestamp
 **And** the model has an index on userId for efficient querying
 **When** a user logs in
