@@ -6,7 +6,7 @@ A Next.js-based task management application with AI-powered organization and cre
 
 This project was initialized with:
 ```bash
-pnpm create next-app@latest advanced-todo --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*"
+pnpm create next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias "@/*"
 ```
 
 ## Getting Started
@@ -69,7 +69,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Project Structure
 
 ```
-advanced-todo/
+.
 ├── app/
 │   ├── api/
 │   │   └── auth/
