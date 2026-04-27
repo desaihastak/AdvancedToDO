@@ -3,9 +3,117 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Base UI styles - custom implementation for stability */
+/* 
+ * Design System Tokens
+ */
+
 @layer base {
   :root {
+    /* Color Palette */
+    --color-primary-bg: rgb(33, 7, 110);
+    --color-primary-button: rgb(36, 10, 103);
+    --color-primary-accent: rgb(105, 48, 255);
+    --color-text-primary: rgb(255, 255, 255);
+    --color-text-secondary: rgb(0, 0, 0);
+    --color-text-muted: rgb(118, 118, 118);
+    --color-text-dark: rgb(36, 35, 35);
+    --color-bg-light: rgb(247, 242, 255);
+    --color-bg-card: rgba(255, 255, 255, 0.1);
+    --color-border-primary: rgb(105, 48, 255);
+    --color-border-secondary: rgb(239, 239, 239);
+    --color-border-muted: rgb(189, 189, 189);
+    --color-success: rgb(169, 241, 203);
+
+    /* Typography */
+    --font-sans: 'Geist', 'Geist Placeholder', sans-serif;
+    --font-secondary: 'Inter', 'Inter Placeholder', sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+
+    /* Font Sizes */
+    --font-size-h1: 48px;
+    --font-size-h2: 22px;
+    --font-size-h3: 20px;
+    --font-size-h4: 16px;
+    --font-size-h5: 14px;
+    --font-size-h6: 12px;
+    --font-size-body: 12px;
+    --font-size-small: 11px;
+
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Line Heights */
+    --line-height-h1: 57.6px;
+    --line-height-h2: 28px;
+    --line-height-h4: 24px;
+    --line-height-h6: 16px;
+    --line-height-body: normal;
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+
+    /* Letter Spacing */
+    --letter-spacing-h1: -0.96px;
+    --letter-spacing-normal: normal;
+    --letter-spacing-wide: 0.5px;
+
+    /* Spacing */
+    --spacing-unit: 4px;
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+    --spacing-3xl: 64px;
+    --spacing-4xl: 80px;
+    --spacing-5xl: 96px;
+
+    /* Button Padding */
+    --button-padding-sm: 8px 12px;
+    --button-padding-md: 10px 16px;
+    --button-padding-lg: 12px 20px;
+
+    /* Section Padding */
+    --section-padding-sm: 32px 16px;
+    --section-padding-md: 64px 16px;
+    --section-padding-lg: 80px 16px;
+    --section-padding-xl: 96px 32px;
+
+    /* Border Radius */
+    --radius-none: 0;
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+    /* Transitions */
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 200ms ease-in-out;
+    --transition-slow: 300ms ease-in-out;
+
+    /* Z-Index */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+
+    /* Base radius */
     --radius: 0.625rem;
   }
 }

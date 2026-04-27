@@ -2,6 +2,80 @@
 
 All TypeScript/TSX files in this project must follow this import organization pattern for consistency and maintainability.
 
+## Design System
+
+Design tokens are defined in `lib/design-tokens.ts` and as CSS custom properties in `app/globals.css`. All components should use these tokens for visual consistency.
+
+### Color Tokens
+
+Use semantic color variables from the design system:
+
+```css
+/* Primary colors */
+--color-primary-bg
+--color-primary-button
+--color-primary-accent
+
+/* Text colors */
+--color-text-primary
+--color-text-secondary
+--color-text-muted
+--color-text-dark
+
+/* Background colors */
+--color-bg-light
+--color-bg-card
+```
+
+### Typography Tokens
+
+```css
+/* Font families */
+--font-sans
+--font-secondary
+--font-mono
+
+/* Font sizes */
+--font-size-h1 through --font-size-small
+
+/* Font weights */
+--font-weight-light through --font-weight-bold
+```
+
+### Spacing Tokens
+
+```css
+/* Spacing scale */
+--spacing-xs through --spacing-5xl
+
+/* Component-specific padding */
+--button-padding-sm/md/lg
+--section-padding-sm/md/lg/xl
+```
+
+### Usage in Components
+
+```tsx
+// Use design tokens in Tailwind classes via CSS variables
+<div style={{ backgroundColor: 'var(--color-primary-bg)' }}>
+  <h1 style={{ 
+    fontFamily: 'var(--font-sans)',
+    fontSize: 'var(--font-size-h1)',
+    color: 'var(--color-text-primary)'
+  }}>
+    Heading
+  </h1>
+</div>
+```
+
+Or import TypeScript tokens:
+
+```typescript
+import { designTokens } from '@/lib/design-tokens'
+
+const primaryColor = designTokens.colors.primary.background
+```
+
 ## Pattern
 
 ```typescript
