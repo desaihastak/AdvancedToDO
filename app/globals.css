@@ -9,25 +9,32 @@
 
 @layer base {
   :root {
-    /* Color Palette */
-    --color-primary-bg: rgb(33, 7, 110);
-    --color-primary-button: rgb(36, 10, 103);
-    --color-primary-accent: rgb(105, 48, 255);
-    --color-text-primary: rgb(255, 255, 255);
-    --color-text-secondary: rgb(0, 0, 0);
-    --color-text-muted: rgb(118, 118, 118);
-    --color-text-dark: rgb(36, 35, 35);
-    --color-bg-light: rgb(247, 242, 255);
+    /* Cosmic Violet Color Palette */
+    --color-dark-amethyst: #240046;
+    --color-indigo-ink: #3c096c;
+    --color-indigo-velvet: #5a189a;
+    --color-royal-violet: #7b2cbf;
+    --color-lavender-purple: #9d4edd;
+
+    /* Semantic Color Mappings */
+    --color-primary-bg: var(--color-dark-amethyst);
+    --color-primary-button: var(--color-indigo-ink);
+    --color-primary-accent: var(--color-royal-violet);
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #000000;
+    --color-text-muted: #767676;
+    --color-text-dark: #242323;
+    --color-bg-light: #f7f2ff;
     --color-bg-card: rgba(255, 255, 255, 0.1);
-    --color-border-primary: rgb(105, 48, 255);
-    --color-border-secondary: rgb(239, 239, 239);
-    --color-border-muted: rgb(189, 189, 189);
-    --color-success: rgb(169, 241, 203);
+    --color-border-primary: var(--color-royal-violet);
+    --color-border-secondary: #efefef;
+    --color-border-muted: #bdbdbd;
+    --color-success: #a9f1cb;
 
     /* Typography */
-    --font-sans: 'Geist', 'Geist Placeholder', sans-serif;
+    --font-sans: var(--font-geist-sans), 'Geist', 'Geist Placeholder', sans-serif;
     --font-secondary: 'Inter', 'Inter Placeholder', sans-serif;
-    --font-mono: 'Geist Mono', monospace;
+    --font-mono: var(--font-geist-mono), 'Geist Mono', monospace;
 
     /* Font Sizes */
     --font-size-h1: 48px;
@@ -153,6 +160,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  
+  /* Cosmic Violet Theme Colors */
+  --color-dark-amethyst: #240046;
+  --color-indigo-ink: #3c096c;
+  --color-indigo-velvet: #5a189a;
+  --color-royal-violet: #7b2cbf;
+  --color-lavender-purple: #9d4edd;
+  
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);

@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth"
 const MAX_SESSION_AGE = 60 * 60 * 24 * 7 * 1000 // 7 days
 const REFRESH_THRESHOLD = 60 * 60 * 24 * 1000 // 1 day
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   // Validate session for dashboard routes
   if (req.nextUrl.pathname.startsWith("/dashboard")) {
     const session = await auth.api.getSession({ headers: req.headers })

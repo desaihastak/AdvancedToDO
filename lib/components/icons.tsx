@@ -30,10 +30,10 @@ const iconSizes: Record<IconSize, string> = {
 export type IconColor = "primary" | "secondary" | "accent" | "surface" | "foreground" | "muted"
 
 const iconColors: Record<IconColor, string> = {
-  primary: "text-royal-violet",
-  secondary: "text-indigo-velvet",
-  accent: "text-lavender-purple",
-  surface: "text-indigo-ink",
+  primary: "text-[--color-royal-violet]",
+  secondary: "text-[--color-indigo-velvet]",
+  accent: "text-[--color-lavender-purple]",
+  surface: "text-[--color-indigo-ink]",
   foreground: "text-gray-900",
   muted: "text-gray-500",
 }
@@ -107,9 +107,9 @@ export function IconButton({
   children,
 }: IconButtonProps) {
   const variantClasses = {
-    ghost: "hover:bg-indigo-ink/20 active:bg-indigo-ink/30",
-    outline: "border border-indigo-velvet/30 hover:bg-indigo-ink/20",
-    solid: "bg-royal-violet hover:bg-indigo-velvet text-white",
+    ghost: "hover:bg-[--color-indigo-ink]/20 active:bg-[--color-indigo-ink]/30",
+    outline: "border border-[--color-indigo-velvet]/30 hover:bg-[--color-indigo-ink]/20",
+    solid: "bg-[--color-royal-violet] hover:bg-[--color-indigo-velvet] text-white",
   }
 
   return (

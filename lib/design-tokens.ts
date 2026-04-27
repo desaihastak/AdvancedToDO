@@ -6,42 +6,58 @@
  */
 
 export const designTokens = {
+  // Cosmic Violet Color Palette
+  cosmicViolet: {
+    darkAmethyst: '#240046', // Background
+    indigoInk: '#3c096c', // Surface / Cards
+    indigoVelvet: '#5a189a', // Secondary Actions
+    royalViolet: '#7b2cbf', // Primary Highlights
+    lavenderPurple: '#9d4edd', // Accents
+  },
+
   // Color Palette
   colors: {
-    // Primary colors (purple theme)
+    // Primary colors (Cosmic Violet theme)
     primary: {
-      background: 'rgb(33, 7, 110)', // Deep purple background
-      button: 'rgb(36, 10, 103)', // Slightly lighter purple for buttons
-      accent: 'rgb(105, 48, 255)', // Purple accent color
+      background: '#240046', // Dark Amethyst - Deep purple background
+      button: '#3c096c', // Indigo Ink - Slightly lighter purple for buttons
+      accent: '#7b2cbf', // Royal Violet - Primary accent color
     },
-    
+
+    // Secondary colors
+    secondary: {
+      surface: '#3c096c', // Indigo Ink - Surface / Cards
+      action: '#5a189a', // Indigo Velvet - Secondary actions
+      accent: '#9d4edd', // Lavender Purple - Accents
+    },
+
     // Text colors
     text: {
-      primary: 'rgb(255, 255, 255)', // White for headings
-      secondary: 'rgb(0, 0, 0)', // Black for body text
-      muted: 'rgb(118, 118, 118)', // Gray for muted text
-      dark: 'rgb(36, 35, 35)', // Dark gray
+      primary: '#ffffff', // White for headings
+      secondary: '#000000', // Black for body text
+      muted: '#767676', // Gray for muted text
+      dark: '#242323', // Dark gray
     },
-    
+
     // Background colors
     background: {
-      primary: 'rgb(33, 7, 110)', // Main background
-      secondary: 'rgb(36, 10, 103)', // Secondary background
-      light: 'rgb(247, 242, 255)', // Light purple tint
-      white: 'rgb(255, 255, 255)',
+      primary: '#240046', // Dark Amethyst - Main background
+      secondary: '#3c096c', // Indigo Ink - Secondary background
+      light: '#f7f2ff', // Light purple tint
+      white: '#ffffff',
       card: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white
     },
-    
+
     // Border colors
     border: {
-      primary: 'rgb(105, 48, 255)',
-      secondary: 'rgb(239, 239, 239)',
-      muted: 'rgb(189, 189, 189)',
+      primary: '#7b2cbf', // Royal Violet
+      secondary: '#efefef',
+      muted: '#bdbdbd',
     },
-    
+
     // Success colors
     success: {
-      primary: 'rgb(169, 241, 203)', // Green tint
+      primary: '#a9f1cb', // Green tint
     },
   },
   

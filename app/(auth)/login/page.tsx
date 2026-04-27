@@ -140,7 +140,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-violet-500 via-purple-500 to-indigo-600 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom right, var(--color-dark-amethyst), var(--color-indigo-ink), var(--color-indigo-velvet))' }}>
       <div className="max-w-md w-full">
         <Card className="shadow-2xl">
           <CardHeader className="space-y-2 text-center">
@@ -219,7 +219,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-muted"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="px-2 bg-surface text-muted">Or continue with email</span>
+                <span className="px-2 bg-card text-muted">Or continue with email</span>
               </div>
             </div>
 

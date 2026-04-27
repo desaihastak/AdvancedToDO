@@ -120,7 +120,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-violet-500 via-purple-500 to-indigo-600 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom right, var(--color-dark-amethyst), var(--color-indigo-ink), var(--color-indigo-velvet))' }}>
       <div className="max-w-md w-full">
         <Card className="shadow-2xl">
           <CardHeader className="space-y-2 text-center">
